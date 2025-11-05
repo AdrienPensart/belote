@@ -3,90 +3,139 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0-alpha1/dist/htmx.min.js"></script>
 		<title>Belote ou Secte ?</title>
 	</head>
 	<body>
-		<form id="joiner">
+		<form id="join">
 			<label for="username">Adepte:</label>
 			<input type="text" name="username" placeholder="Ton ostie de pseudo" id="username" required />
-			<button id="join" type="submit">Je rejoins la secte</button>
+			<button type="submit">Je rejoins la secte</button>
 		</form>
-
-		<button id="generate_tables">Repartir les jours sur les tables</button>
-
+		<div id="connected"></div>
 		<br />
-		<ul id="users"></ul>
-		<ul id="tables"></ul>
-		<script>
-			refreshUsers = () =>
-				fetch('/users')
-					.then((resp) => resp.text())
-					.then((text) => {
-						const ul = document.getElementById('users');
-						const users = JSON.parse(text);
-						console.log('Users:', users);
-						users.forEach((user) => {
-							let li = document.createElement('li');
-							li.innerText = user.name + (user.table ? ' (Table: ' + user.table + ')' : '');
-							ul.appendChild(li);
-						});
-					});
-			refreshUsers();
 
-			refreshTables = () =>
+		<ul id="tables"></ul>
+		<div id="messages">disconnected</div>
+		<script>
+			// @ts-check
+			const refreshTables = () =>
 				fetch('/tables')
 					.then((resp) => resp.text())
 					.then((text) => {
-						const ul = document.getElementById('tables');
+						const ulTables = document.getElementById('tables');
+						if (!ulTables) {
+							return;
+						}
+						ulTables.innerHTML = '';
+
 						const tables = JSON.parse(text);
 						console.log('Tables:', tables);
+
 						for (const [table, users] of Object.entries(tables)) {
-							let li = document.createElement('li');
-							li.innerText = table + ': ' + users.map((user) => user.name).join(', ');
-							ul.appendChild(li);
+							let liTable = document.createElement('li');
+							let ulUsers = document.createElement('ul');
+							for (const [username, user] of Object.entries(users)) {
+								let liUser = document.createElement('li');
+								liUser.innerText = user.name;
+								ulUsers.appendChild(liUser);
+							}
+							liTable.innerText = table;
+							liTable.appendChild(ulUsers);
+							ulTables.appendChild(liTable);
 						}
 					});
-			refreshTables();
 
-			generateTables = () =>
-				fetch('/generate_tables', {
-					method: 'POST',
-				})
-					.then((resp) => resp.text())
-					.then((text) => {
+			const connectedUser = (username) => {
+				const connectedDiv = document.getElementById('connected');
+				if (!connectedDiv) {
+					return;
+				}
+				connectedDiv.innerHTML = '';
+
+				const finishedButton = document.createElement('button');
+				finishedButton.innerHTML = 'Game finished (return to Panama)!';
+				finishedButton.addEventListener('click', function (event) {
+					fetch('/me/finish?username=' + encodeURIComponent(username)).then(() => {
+						console.log('User finished:', username);
 						refreshTables();
 					});
+				});
 
-			const generateTablesButton = document.getElementById('generate_tables');
-			generateTablesButton.addEventListener('click', function (event) {
-				event.preventDefault();
-				generateTables();
-			});
-
-			const joinerForm = document.getElementById('joiner');
-			joinerForm.addEventListener('submit', function (event) {
-				event.preventDefault();
-
-				const elem = document.getElementById('username');
-				const jsonBody = JSON.stringify({ username: elem.value });
-
-				fetch('/join', {
-					method: 'POST',
-					body: jsonBody,
-					headers: {
-						'Content-Type': 'application/json',
-						// 'Content-Type': 'multipart/form-data',
-					},
-				})
-					.then((resp) => resp.text())
-					.then((text) => {
-						const elem = document.getElementById('username');
-						elem.textContent = text;
-
-						refreshUsers();
-						refreshUsersByTable();
+				const quitButton = document.createElement('button');
+				quitButton.innerHTML = 'Quit Meltdown (' + username + ')';
+				quitButton.addEventListener('click', function (event) {
+					fetch('/me/quit?username=' + encodeURIComponent(username)).then(() => {
+						console.log('User left:', username);
+						localStorage.removeItem('username');
+						connectedDiv.innerHTML = '';
+						refreshTables();
 					});
-			});
+				});
+
+				connectedDiv.appendChild(quitButton);
+				connectedDiv.appendChild(finishedButton);
+			};
+
+			(function () {
+				const username = localStorage.getItem('username');
+				if (username) {
+					connectedUser(username);
+				}
+
+				const joinForm = document.getElementById('join');
+				if (!joinForm) {
+					return;
+				}
+				joinForm.addEventListener('submit', function (event) {
+					event.preventDefault();
+
+					const usernameElem = document.getElementById('username');
+					if (!usernameElem) {
+						return;
+					}
+					const usernameInput = /** @type {HTMLInputElement} */ (usernameElem);
+					const username = usernameInput.value;
+					if (!username) {
+						return;
+					}
+					fetch('/users/join?username=' + encodeURIComponent(username))
+						.then((resp) => resp.text())
+						.then((text) => {
+							localStorage.setItem('username', username);
+							connectedUser(username);
+							refreshTables();
+						});
+				});
+
+				// WebSocket
+				let hostname = window.location.host;
+				const scheme = document.location.protocol === 'http:' ? 'ws://' : 'wss://';
+				let ws = new WebSocket(scheme + hostname + '/meltdown');
+				const messagesDiv = document.getElementById('messages');
+				if (!messagesDiv) {
+					return;
+				}
+				ws.onopen = () => {
+					const msg = 'Connected to Meltdown, tables updated';
+					messagesDiv.innerHTML = msg;
+					console.log(msg);
+					refreshTables();
+				};
+
+				ws.onmessage = (event) => {
+					const msg = 'Meltdown event received, tables updated!';
+					console.log(msg);
+					messagesDiv.innerHTML = msg;
+					refreshTables();
+				};
+
+				ws.onclose = () => {
+					const msg = 'Disconnected from Meltdown!';
+					console.log(msg);
+					messagesDiv.innerHTML = msg;
+				};
+			})();
 		</script>
 	</body>
 </html>

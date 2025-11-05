@@ -1,14 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Hello, World!</title>
+		<script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0-alpha1/dist/htmx.min.js"></script>
+		<title>Belote backend</title>
 	</head>
 	<body>
-		<button id="logout_everyone" type="button">Logout everyone</button>
-		<output id="users_logout" for="button"></output>
+		<a href="/">Frontend</a>
+		<br /><br />
+		<button id="load_fixtures" type="button">Load users</button>
+		<br /><br />
+		<button id="delete_users" type="button">Delete users</button>
+		<br /><br />
+		<button id="generate_tables">Distribute Tables</button>
+		<br /><br />
+		<button id="clear_tables">Clear Tables</button>
+		<br /><br />
+		<ul id="tables"></ul>
 		<script>
+			// @ts-check
+			const refreshTables = () =>
+				fetch('/tables')
+					.then((resp) => resp.text())
+					.then((text) => {
+						const ulTables = document.getElementById('tables');
+						if (!ulTables) {
+							return;
+						}
+						ulTables.innerHTML = '';
+
+						const tables = JSON.parse(text);
+
+						console.log('Tables:', tables);
+						for (const [table, users] of Object.entries(tables)) {
+							let liTable = document.createElement('li');
+							let ulUsers = document.createElement('ul');
+							console.log('Table:', table);
+
+							for (const user of users) {
+								console.log('User:', user);
+								let liUser = document.createElement('li');
+								let removeButton = document.createElement('button');
+								removeButton.innerText =
+									`IP: ${user.ip}` +
+									` Joined: ${new Date(user.joinedAt).toLocaleString()}` +
+									` Activity: ${new Date(user.lastActiveAt).toLocaleString()}`;
+
+								removeButton.addEventListener('click', function (event) {
+									fetch('/users/delete?username=' + encodeURIComponent(user.name)).then(() => {
+										console.log('Removed user:', user.name);
+										refreshTables();
+									});
+								});
+								liUser.appendChild(removeButton);
+								liUser.appendChild(document.createElement('br'));
+								ulUsers.appendChild(liUser);
+							}
+							liTable.innerText = table + ' (' + users.length + ' players)';
+							liTable.appendChild(ulUsers);
+							ulTables.appendChild(liTable);
+						}
+					});
+
+			(function () {
+				refreshTables();
+
+				const loadFixturesButton = document.getElementById('load_fixtures');
+				if (!loadFixturesButton) {
+					return;
+				}
+				loadFixturesButton.addEventListener('click', function (event) {
+					fetch('/users/load_fixtures')
+						.then((resp) => resp.text())
+						.then((text) => {
+							console.log(text);
+							refreshTables();
+						});
+				});
+
+				const clearTablesButton = document.getElementById('clear_tables');
+				if (!clearTablesButton) {
+					return;
+				}
+				clearTablesButton.addEventListener('click', function (event) {
+					fetch('/tables/clear')
+						.then((resp) => resp.text())
+						.then((text) => {
+							console.log(text);
+							refreshTables();
+						});
+				});
+
+				const generateTablesButton = document.getElementById('generate_tables');
+				if (!generateTablesButton) {
+					return;
+				}
+				generateTablesButton.addEventListener('click', function (event) {
+					fetch('/tables/generate')
+						.then((resp) => resp.text())
+						.then((text) => {
+							console.log(text);
+							refreshTables();
+						});
+				});
+
+				const logoutUsersButton = document.getElementById('delete_users');
+				if (!logoutUsersButton) {
+					return;
+				}
+				logoutUsersButton.addEventListener('click', function (event) {
+					fetch('/users/clear')
+						.then((resp) => resp.text())
+						.then((text) => {
+							console.log(text);
+							refreshTables();
+						});
+				});
+			})();
 		</script>
 	</body>
 </html>
