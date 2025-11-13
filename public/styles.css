@@ -1,0 +1,154 @@
+:root {
+	--primary-color-dark: #072a08;
+	--primary-color: #0f5311;
+	--primary-color-light: #66a468;
+	--secondary-color: #2b3681;
+	--secondary-color-dark: #0a0d27;
+	--secondary-color-light: #3945b5;
+	--background-color: #f4f6f8;
+	--text-color: #333;
+	--hover-color: #e0e0e0;
+	--font-family: 'Segoe UI', sans-serif;
+}
+
+.secondary_background {
+	background-color: var(--secondary-color);
+	color: white;
+}
+
+
+html {
+	font-family: var(--font-family);
+
+}
+
+.tables {
+	border: 1px solid #ccc;
+	border-radius: 8px;
+	overflow: hidden;
+	padding-top: 10px;
+	margin-bottom: 10px;
+}
+
+.table_ready_status {
+	margin: 10px auto;
+	font-weight: bold;
+}
+
+.table_separator {
+	border: none;
+	border-top: 1px solid #ccc;
+	margin: 10px 0;
+	width: 80%;
+}
+
+table {
+	width: 80%;
+	border-collapse: collapse;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.824);
+	background-color: #FFF;
+}
+
+thead {
+	background-color: #f4f6f8;
+}
+
+th,
+td {
+	padding: 2px 4px;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}
+
+th {
+	font-weight: 600;
+}
+
+
+.user_ready {
+	color: #006400;
+}
+
+.user_not_ready {
+	color: #FF8C00;
+}
+
+button {
+	flex: 1;
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+button:disabled {
+	background-color: var(--primary-color-light);
+	cursor: not-allowed;
+}
+
+#username:disabled {
+	cursor: not-allowed;
+}
+
+.button_container {
+	margin: auto 20%;
+	display: flex;
+	margin-top: 20px;
+	gap: 10px;
+	border-radius: 10px;
+}
+
+.button_container_admin {
+	display: flex;
+	gap: 10px;
+	margin-top: 20px;
+	border-radius: 10px;
+}
+
+
+.username_cell {
+	font-weight: bold;
+	color: var(--primary-color-dark);
+}
+
+.lebar {
+	width: 100px;
+	height: 100px;
+	border-radius: 10%;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lebar_julien {
+	width: 50px;
+	height: 50px;
+	display: flex;
+	margin-top: 20px;
+	padding: 10px;
+	border-radius: 10px;
+	background: url('./img/julien.jpg');
+	background-size: cover;
+}
+
+
+.lebar_nina {
+	width: 50px;
+	height: 50px;
+	display: flex;
+	margin-top: 20px;
+	padding: 10px;
+	border-radius: 10px;
+	background: url('./img/nina.jpg');
+	background-size: cover;
+}
+
+.background_nina {
+	background-size: contain;
+	background: url('./img/nina.jpg');
+}
+
+.background_julien {
+	background-size: contain;
+	background: url('./img/julien.jpg') !important;
+}

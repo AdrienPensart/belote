@@ -1,5 +1,24 @@
 {
 	"files.associations": {
 		"wrangler.json": "jsonc"
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "always",
+			"source.sortImports": "explicit",
+		}
+	},
+	"[json]": {
+		"editor.defaultFormatter": "vscode.json-language-features",
+	    "editor.formatOnSave": true,
+
+		"editor.suggest.insertMode": "replace"
+	},
+	"[css]": {
+	    "editor.defaultFormatter": "vscode.css-language-features", // Use built-in CSS formatter
+	    "editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+		}
 	}
 }

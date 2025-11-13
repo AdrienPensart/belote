@@ -11,7 +11,6 @@ import {
 	toggleCanPlayTwoTables,
 	setInactive,
 } from './user';
-import { userInfo } from 'os';
 
 type Sessions = Map<WebSocket, { [key: string]: string }>;
 const DEFAULT_TABLE = 'panama';
@@ -432,8 +431,8 @@ export class MyDurableObject extends DurableObject<Env> {
 			webSocket: client,
 		});
 	}
-	// async clearDo(): Promise<void> {
-	// 	await this.ctx.storage.deleteAlarm();
-	// 	await this.ctx.storage.deleteAll();
-	// }
+	 async clearDo(): Promise<void> {
+	 	await this.ctx.storage.deleteAlarm();
+	 	await this.ctx.storage.deleteAll();
+	 }
 }
