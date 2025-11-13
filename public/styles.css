@@ -68,7 +68,6 @@ th {
 .user_ready {
 	color: #006400;
 }
-
 .user_not_ready {
 	color: #FF8C00;
 }
@@ -147,7 +146,6 @@ button:disabled {
 	background-size: contain;
 	background: url('./img/nina.jpg');
 }
-
 .background_julien {
 	background-size: contain;
 	background: url('./img/julien.jpg') !important;
