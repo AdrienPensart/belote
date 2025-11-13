@@ -4,6 +4,11 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Meltdown Belote</title>
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="stylesheet" href="/styles.css" />
+		<meta name="description" content="Meltdown Belote - Gestion des tables de belote" />
+		<script type="text/typescript" src="./src/utils.ts"></script>
+
 	</head>
 	<body>
 		<form id="join">
@@ -14,12 +19,19 @@
 		<div id="connected"></div>
 		<br />
 
-		<ul id="tables"></ul>
+
+		<div id="tables" class=""></div>
+		
 		<div id="messages">disconnected</div>
+		<a href="/help">Aide</a>
+		<br />
+		<a href="/valeurs.webp" target="_blank">Valeur des cartes</a>
+		<br />
 		<a href="/help">Aide</a><br />
 		<a href="/valeurs.webp">Valeur des cartes</a><br />
 		<a href="/backend">Backend</a>
 		<script>
+
 			// @ts-check
 			(function () {
 				const messagesDiv = document.getElementById('messages');
@@ -29,6 +41,7 @@
 				}
 
 				const ulTables = document.getElementById('tables');
+
 				if (!ulTables) {
 					console.error('tables element not found');
 					return;
@@ -53,6 +66,9 @@
 					return;
 				}
 				const usernameInput = /** @type {HTMLInputElement} */ (usernameElem);
+				var hr = document.createElement('hr');
+				hr.className = 'table_separator';
+				ulTables.appendChild(hr);
 
 				const connectWebsocket = (username) => {
 					const hostname = window.location.host;
@@ -99,48 +115,147 @@
 							ulTables.innerHTML = '';
 
 							const tables = JSON.parse(text);
-							// console.log('Tables:', tables);
 
+							var profils = ['nina', 'julien']
+							var i = 0;
 							for (const [table, users] of Object.entries(tables)) {
-								const liTable = document.createElement('li');
-								const ulUsers = document.createElement('ul');
+
+								const usersList = Object.entries(users).map(([username, user]) => ({
+									name: user.name,
+									ready: user.ready,
+									ip: user.ip
+								}));
+
+								const tableElement = document.createElement('table');
+								tableElement.className = 'tables';
+
+								//tableElement.classList.add('background_' + profils[i++ % profils.length]);
+
+								let header = tableElement.createTHead()
+								let headerRow = header.insertRow();
+
+				                headerRow.insertCell().appendChild(document.createTextNode('Username'));
+
+				                headerRow.insertCell().appendChild(document.createTextNode('IP'));
+
+				                headerRow.insertCell().appendChild(document.createTextNode('Ready'));
+
 								let readyUsers = 0;
-								for (const [username, user] of Object.entries(users)) {
-									const liUser = document.createElement('li');
-									if (user.ready) {
-										readyUsers++;
-										liUser.innerText = user.name + ' (ready)';
-										liUser.setAttribute('style', 'color: #006400');
-									} else {
-										liUser.innerText = user.name + ' (not ready)';
-										liUser.setAttribute('style', 'color: #FF8C00');
-									}
+								let tbody = tableElement.createTBody();
+								for (const user of usersList) {
+									let rowUser = tbody.insertRow();
+									const tdUsername = rowUser.insertCell();
+									tdUsername.appendChild(document.createTextNode(user.name + (user.name == localUsername ? ' (you)' : '')));
+
+
+									if (user.ready) readyUsers++;
+
+									const tdIp = rowUser.insertCell();
+
 									if (!user.ip) {
-										liUser.innerText += ' added by admin';
+										tdIp.appendChild(document.createTextNode('added by admin'));
 									}
+
 									if (user.name == localUsername) {
 										found = true;
 									}
-									ulUsers.appendChild(liUser);
+
+									const tReady = rowUser.insertCell();
+									rowUser.classList.add( user.ready ? 'user_ready' : 'user_not_ready');
+									tReady.appendChild(document.createTextNode(user.ready ? '✅' : '❌'));
+
 								}
-								liTable.innerText = table + ' (' + readyUsers + ' / ' + users.length + ' ready)';
-								if (users.length == 5) {
-									liTable.innerText += ' : apprenez le Tarot a 5 :p';
+
+								const tableReady = document.createElement('div');
+								tableReady.className = 'table_ready_status';
+								tableReady.innerText = table + ' : (' + readyUsers + ' / ' + users.length + ' ready)';
+								if (users.length >= 5) {
+									tableReady.innerText += ' : apprenez le Tarot a 5 :p';
 								}
-								liTable.appendChild(ulUsers);
-								ulTables.appendChild(liTable);
+
+								ulTables.appendChild(tableReady);
+								ulTables.appendChild(tableElement);
+								ulTables.appendChild(hr);
 							}
 
+							console.log('Found user in tables:', found);
+
 							if (!found) {
+								const joinButton = document.getElementById('join_button');
+								if (!joinButton) {
+									console.error('join_button button not found');
+									return;
+								}
+								const joinButtonInput = /** @type {HTMLInputElement} */ (joinButton);
 								joinButtonInput.disabled = false;
 								connectedDiv.innerHTML = '';
 								localStorage.removeItem('username');
+
+								const connectedDiv = document.getElementById('connected');
+								if (!connectedDiv) {
+									console.log('connected element not found');
+									return;
+								}
+								connectedDiv.className = 'connectedDiv';
+								connectedDiv.innerHTML = '';
 							}
 						});
 
 				const connectedUser = (username) => {
+		
+					const joinButton = document.getElementById('join_button');
+					if (!joinButton) {
+						console.log('join_button button not found');
+						return;
+					}
+					const joinButtonInput = /** @type {HTMLInputElement} */ (joinButton);
 					joinButtonInput.disabled = true;
+
+					const joinInputUsernameElement = document.getElementById('username');
+					const joinInputUsername = /** @type {HTMLInputElement} */ (joinInputUsernameElement);
+					joinInputUsername.disabled = true;
+
+					const connectedDiv = document.getElementById('connected');
+					if (!connectedDiv) {
+						console.log('connected element not found');
+						return;
+					}
 					connectedDiv.innerHTML = '';
+					createButtons(document, username, connectedDiv, joinButtonInput, joinInputUsernameElement);
+
+
+				};
+
+				const username = localStorage.getItem('username');
+				if (username) {
+					console.log(`user already set: ${username}`);
+					usernameInput.value = username;
+					connectedUser(username);
+					connectWebsocket(username);
+				}
+
+				const joinForm = document.getElementById('join');
+				if (!joinForm) {
+					console.error('join element not found');
+					return;
+				}
+				joinForm.addEventListener('submit', function (event) {
+					event.preventDefault();
+					const username = usernameInput.value;
+
+					fetch('/me/join?username=' + encodeURIComponent(username))
+						.then((resp) => resp.text())
+						.then((text) => {
+							localStorage.setItem('username', username);
+							connectedUser(username);
+							refreshTables();
+						});
+				});
+
+				refreshTables();
+
+			function createButtons(document, username, connectedDiv, joinButtonInput, joinInputUsername) {
+
 
 					const quitButton = document.createElement('button');
 					quitButton.innerHTML = 'Quit Meltdown (' + username + ')';
@@ -150,6 +265,7 @@
 							localStorage.removeItem('username');
 							connectedDiv.innerHTML = '';
 							joinButtonInput.disabled = false;
+							joinInputUsername.disabled = false;
 							refreshTables();
 						});
 					});
@@ -188,36 +304,13 @@
 						});
 					});
 					connectedDiv.appendChild(readyButton);
-				};
+			}
 
-				const username = localStorage.getItem('username');
-				if (username) {
-					console.log(`user already set: ${username}`);
-					usernameInput.value = username;
-					connectedUser(username);
-					connectWebsocket(username);
-				}
-
-				const joinForm = document.getElementById('join');
-				if (!joinForm) {
-					console.error('join element not found');
-					return;
-				}
-				joinForm.addEventListener('submit', function (event) {
-					event.preventDefault();
-					const username = usernameInput.value;
-
-					fetch('/me/join?username=' + encodeURIComponent(username))
-						.then((resp) => resp.text())
-						.then((text) => {
-							localStorage.setItem('username', username);
-							connectedUser(username);
-							refreshTables();
-						});
-				});
-
-				refreshTables();
 			})();
+
+
+
+
 		</script>
 	</body>
 </html>
