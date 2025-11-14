@@ -242,7 +242,7 @@ export default {
 					const table = url.searchParams.get('table');
 					if (!table) {
 						return new Response(JSON.stringify({ message: 'missing table name' }), { status: 400 });
-					}
+						}
 					console.log(table);
 					const ready = await stub.adminTableReady(table);
 					if (!ready) {

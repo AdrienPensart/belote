@@ -99,6 +99,7 @@ button:disabled {
 	border-radius: 10px;
 }
 
+<<<<<<< HEAD
 .button_container_admin {
 	display: flex;
 	gap: 10px;
@@ -107,6 +108,8 @@ button:disabled {
 }
 
 
+=======
+>>>>>>> 02e0f8a (Update)
 .username_cell {
 	font-weight: bold;
 	color: var(--primary-color-dark);
