@@ -1,223 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Meltdown Belote</title>
-	</head>
-	<body>
-		<form id="join">
-			<label for="username">Adepte:</label>
-			<input type="text" name="username" placeholder="Ton ostie de pseudo" id="username" required />
-			<button id="join_button" type="submit">Je rejoins la secte</button>
-		</form>
-		<div id="connected"></div>
-		<br />
+<html lang="en" ng-app="meltdownApp">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meltdown Belote</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="index_app.js"></script>
+</head>
+<body ng-controller="MainController as ctrl">
+  <form ng-submit="ctrl.join()">
+    <label for="username">Adepte:</label>
+    <input type="text" ng-model="ctrl.usernameInput" ng-disabled="ctrl.joinDisabled" placeholder="Ton ostie de pseudo" required />
+    <button type="submit" ng-disabled="ctrl.joinDisabled">Je rejoins la secte</button>
+  </form>
 
-		<ul id="tables"></ul>
-		<div id="messages">disconnected</div>
-		<a href="/help">Aide</a><br />
-		<a href="/valeurs.webp">Valeur des cartes</a><br />
-		<a href="/backend">Backend</a>
-		<script>
-			// @ts-check
-			(function () {
-				const messagesDiv = document.getElementById('messages');
-				if (!messagesDiv) {
-					console.error('messages element not found');
-					return;
-				}
+  <div class="button_container">
+    <button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.quit()">Quit Meltdown ({{ctrl.username}})</button><br />
+    <button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.finish()">Game finished (return to Panama)!</button><br />
+    <button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.ready()">Ready to play!</button>
+  </div>
 
-				const ulTables = document.getElementById('tables');
-				if (!ulTables) {
-					console.error('tables element not found');
-					return;
-				}
+  <br />
+  <div id="tables">
+    <div ng-repeat="table in ctrl.tables">
+      <div class="table_ready_status">
+        {{table.name}} : ({{table.readyCount}} / {{table.users.length}} ready)
+        <span ng-if="table.users.length >= 5"> : apprenez le Tarot a 5 :p</span>
+      </div>
+      <table class="tables">
+        <thead>
+          <tr><th>Username</th><th>IP</th><th>Ready</th></tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="user in table.users" ng-class="user.ready ? 'user_ready' : 'user_not_ready'">
+            <td ng-class="{'username_cell': user.name === ctrl.username}">
+              {{user.name}}<span ng-if="user.name === ctrl.username"> (you)</span>
+            </td>
+            <td>{{user.ip || 'added by admin'}}</td>
+            <td>{{user.ready ? '✅' : '❌'}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <hr class="table_separator" />
+    </div>
+  </div>
 
-				const joinButton = document.getElementById('join_button');
-				if (!joinButton) {
-					console.error('join_button button not found');
-					return;
-				}
-				const joinButtonInput = /** @type {HTMLInputElement} */ (joinButton);
-
-				const connectedDiv = document.getElementById('connected');
-				if (!connectedDiv) {
-					console.error('connected element not found');
-					return;
-				}
-
-				const usernameElem = document.getElementById('username');
-				if (!usernameElem) {
-					console.error('username element not found');
-					return;
-				}
-				const usernameInput = /** @type {HTMLInputElement} */ (usernameElem);
-
-				const connectWebsocket = (username) => {
-					const hostname = window.location.host;
-					const scheme = document.location.protocol === 'http:' ? 'ws://' : 'wss://';
-					const connect = () => {
-						const ws = new WebSocket(scheme + hostname + '/me/meltdown?username=' + encodeURIComponent(username));
-
-						ws.onopen = () => {
-							const msg = 'Connected to Meltdown, tables updated';
-							messagesDiv.innerHTML = msg;
-							console.log(msg);
-							refreshTables();
-						};
-
-						ws.onmessage = (event) => {
-							const msg = `Update tables because : ${event.data}`;
-							console.log(msg);
-							messagesDiv.innerHTML = msg;
-							refreshTables();
-						};
-
-						ws.onerror = () => {
-							ws.close();
-						};
-
-						ws.onclose = () => {
-							const msg = 'Disconnected from Meltdown!';
-							console.warn(msg);
-							messagesDiv.innerHTML = msg;
-							ulTables.innerHTML = '';
-							setTimeout(connect, 1000);
-						};
-					};
-
-					connect();
-				};
-
-				const refreshTables = () =>
-					fetch('/public/tables')
-						.then((resp) => resp.text())
-						.then((text) => {
-							const localUsername = localStorage.getItem('username');
-							let found = false;
-							ulTables.innerHTML = '';
-
-							const tables = JSON.parse(text);
-							// console.log('Tables:', tables);
-
-							for (const [table, users] of Object.entries(tables)) {
-								const liTable = document.createElement('li');
-								const ulUsers = document.createElement('ul');
-								let readyUsers = 0;
-								for (const [username, user] of Object.entries(users)) {
-									const liUser = document.createElement('li');
-									if (user.ready) {
-										readyUsers++;
-										liUser.innerText = user.name + ' (ready)';
-										liUser.setAttribute('style', 'color: #006400');
-									} else {
-										liUser.innerText = user.name + ' (not ready)';
-										liUser.setAttribute('style', 'color: #FF8C00');
-									}
-									if (!user.ip) {
-										liUser.innerText += ' added by admin';
-									}
-									if (user.name == localUsername) {
-										found = true;
-									}
-									ulUsers.appendChild(liUser);
-								}
-								liTable.innerText = table + ' (' + readyUsers + ' / ' + users.length + ' ready)';
-								if (users.length == 5) {
-									liTable.innerText += ' : apprenez le Tarot a 5 :p';
-								}
-								liTable.appendChild(ulUsers);
-								ulTables.appendChild(liTable);
-							}
-
-							if (!found) {
-								joinButtonInput.disabled = false;
-								connectedDiv.innerHTML = '';
-								localStorage.removeItem('username');
-							}
-						});
-
-				const connectedUser = (username) => {
-					joinButtonInput.disabled = true;
-					connectedDiv.innerHTML = '';
-
-					const quitButton = document.createElement('button');
-					quitButton.innerHTML = 'Quit Meltdown (' + username + ')';
-					quitButton.addEventListener('click', function (event) {
-						fetch('/me/quit?username=' + encodeURIComponent(username)).then(() => {
-							console.log('User left:', username);
-							localStorage.removeItem('username');
-							connectedDiv.innerHTML = '';
-							joinButtonInput.disabled = false;
-							refreshTables();
-						});
-					});
-					connectedDiv.appendChild(quitButton);
-					connectedDiv.appendChild(document.createElement('br'));
-
-					const finishedButton = document.createElement('button');
-					finishedButton.innerHTML = 'Game finished (return to Panama)!';
-					finishedButton.addEventListener('click', function (event) {
-						fetch('/me/finish?username=' + encodeURIComponent(username)).then((response) => {
-							if (response.status == 404) {
-								localStorage.removeItem('username');
-								connectedDiv.innerHTML = '';
-								joinButtonInput.disabled = false;
-							} else {
-								console.log('User finished:', username);
-							}
-							refreshTables();
-						});
-					});
-					connectedDiv.appendChild(finishedButton);
-					connectedDiv.appendChild(document.createElement('br'));
-
-					const readyButton = document.createElement('button');
-					readyButton.innerHTML = 'Ready to play!';
-					readyButton.addEventListener('click', function (event) {
-						fetch('/me/ready?username=' + encodeURIComponent(username)).then((response) => {
-							if (response.status == 404) {
-								localStorage.removeItem('username');
-								connectedDiv.innerHTML = '';
-								joinButtonInput.disabled = false;
-							} else {
-								console.log('User ready:', username);
-								refreshTables();
-							}
-						});
-					});
-					connectedDiv.appendChild(readyButton);
-				};
-
-				const username = localStorage.getItem('username');
-				if (username) {
-					console.log(`user already set: ${username}`);
-					usernameInput.value = username;
-					connectedUser(username);
-					connectWebsocket(username);
-				}
-
-				const joinForm = document.getElementById('join');
-				if (!joinForm) {
-					console.error('join element not found');
-					return;
-				}
-				joinForm.addEventListener('submit', function (event) {
-					event.preventDefault();
-					const username = usernameInput.value;
-
-					fetch('/me/join?username=' + encodeURIComponent(username))
-						.then((resp) => resp.text())
-						.then((text) => {
-							localStorage.setItem('username', username);
-							connectedUser(username);
-							refreshTables();
-						});
-				});
-
-				refreshTables();
-			})();
-		</script>
-	</body>
+  <div id="messages">{{ctrl.message}}</div>
+  <a href="/help">Aide</a><br />
+  <a href="/valeurs.webp" target="_blank">Valeur des cartes</a><br />
+  <a href="/backend">Backend</a>
+</body>
 </html>

@@ -1,399 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Meltdown backend</title>
-	</head>
-	<body>
-		<form id="join">
-			<label for="username">Adepte:</label>
-			<input type="text" name="username" placeholder="Ton ostie de pseudo" id="username" required />
-			<button id="join_button" type="submit">Join</button>
-		</form>
-		<button id="load_fixtures" type="button">Load users</button>
-		<br /><br />
-		<button id="clear_tables" type="button">Clear Tables</button>
-		<br /><br />
-		<!-- <button id="storage_delete" type="button">Delete storage</button>
-		<br /><br /> -->
-		<button id="generate_tables" type="button">Distribute Tables</button>
-		<br /><br />
-		<button id="shuffle_tables" type="button">Reshuffle Tables</button>
-		<br /><br />
-		<button id="notify_all" type="button">Notify all</button>
-		<br /><br />
-		<ul id="tables"></ul>
-		<div id="messages">disconnected</div>
-		<a href="/public/tables">Dump tables</a><br />
-		<a href="/admin/users">Dump users</a><br />
-		<a href="/">Frontend</a><br />
-		<script>
-			// @ts-check
-			(function () {
-				const messagesDiv = document.getElementById('messages');
-				if (!messagesDiv) {
-					console.error('messages element not found');
-					return;
-				}
 
-				const ulTables = document.getElementById('tables');
-				if (!ulTables) {
-					console.error('tables element not found');
-					return;
-				}
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Meltdown backend</title>
+	<link rel="stylesheet" href="/styles.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+	<script src="index_backend.js"></script>
+</head>
 
-				const connectWebsocket = () => {
-					const hostname = window.location.host;
-					const scheme = document.location.protocol === 'http:' ? 'ws://' : 'wss://';
+<body ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm">
+	<form id="join">
+		<label for="username">Adepte:</label>
+		<input type="text" name="username" placeholder="Ton ostie de pseudo" id="username" required
+			ng-model="vm.username" />
+		<button id="join_button" type="submit" ng-click="vm.join()">Join</button>
+	</form>
+	<div class="button_container_admin">
 
-					const connect = () => {
-						const ws = new WebSocket(scheme + hostname + '/admin/meltdown');
+		<button class="secondary_background" id="load_fixtures"  type="button" ng-click="vm.loadFixtures()">Load users</button>
+		<button class="secondary_background" id="clear_tables" type="button" ng-click="vm.clearTables()">Clear tables</button>
+<!-- 		<button class="secondary_background" id="storage_delete" type="button" ng-click="vm.deleteStorage()">Delete storage</button> -->
+		<button class="secondary_background" id="generate_tables" type="button" ng-click="vm.generateTables()">Distribute Tables</button>
+		<button class="secondary_background" id="shuffle_tables" type="button" ng-click="vm.reshuffleTables()">Reshuffle Tables</button>
+		<button class="secondary_background" id="notify_all" type="button" ng-click="vm.notifyAll()">Notify all</button>
+	</div>
+	<div id="tables" ng-repeat="(tableName, users) in vm.tables">
+		<div class="table_ready_status">
+			<span>{{tableName}} ({{vm.readyCount(users)}} / {{users.length}} players)</span>
+			<button ng-click="vm.adminTableReady(tableName)">Ready</button>
+			<button ng-click="vm.adminTableNotReady(tableName)">Not Ready</button>
+			<button ng-click="vm.adminTableDelete(tableName)">Delete</button>
+		</div>
+		<table class="tables">
+			<thead>
+				<tr>
+					<th>Username</th>
+					<th>IP</th>
+					<th>Joined At</th>
+					<th>Last Activity</th>
+					<th>Ready</th>
+					<th>Fini</th>
+					<th>Supprimer</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="user in users">
+					<td ng-style="{'color': user.ready ? '#006400' : '#FF8C00'}">
+						{{user.name}}
+					</td>
+					<td>{{user.ip}}</td>
+					<td>{{user.joinedAt | date:'short'}}</td>
+					<td>{{user.lastActiveAt | date:'short'}}</td>
+					<td ng-if="!user.ready" ng-click="vm.userReady(user.name)">❌</td>
+					<td ng-if="user.ready" ng-click="vm.userNotReady(user.name)">✅</td>
+					<td ng-click="vm.userFinish(user.name)">🏁</td>
+					<td  ng-click="vm.userDelete(user.name)">🚮</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div id="messages">{{vm.messages}}</div>
+	<a href="/public/tables">Dump tables</a>
+	<br />
+	<a href="/admin/users">Dump users</a>
+	<br />
+	<a href="/">Frontend</a>
+	<br />
+</body>
 
-						ws.onopen = () => {
-							const msg = 'Connected to Meltdown, tables updated';
-							messagesDiv.innerHTML = msg;
-							console.log(msg);
-							refreshTables();
-						};
-
-						ws.onmessage = (event) => {
-							const msg = `Update tables because : ${event.data}`;
-							console.log(msg);
-							messagesDiv.innerHTML = msg;
-							refreshTables();
-						};
-
-						ws.onerror = () => {
-							ws.close();
-						};
-
-						ws.onclose = () => {
-							const msg = 'Disconnected from Meltdown!';
-							console.warn(msg);
-							messagesDiv.innerHTML = msg;
-							ulTables.innerHTML = '';
-							setTimeout(connect, 1000);
-						};
-					};
-
-					connect();
-				};
-
-				const refreshTables = () =>
-					fetch('/public/tables')
-						.then((resp) => resp.text())
-						.then((text) => {
-							ulTables.innerHTML = '';
-
-							const tables = JSON.parse(text);
-							// console.log('Tables:', tables);
-							for (let [table, users] of Object.entries(tables)) {
-								users.sort((a, b) => {
-									if (!a.lastActiveAt && !b.lastActiveAt) {
-										return b.joinedAt - a.joinedAt;
-									}
-									return b.lastActiveAt - a.lastActiveAt;
-								});
-
-								const liTable = document.createElement('li');
-								const ulUsers = document.createElement('ul');
-								// console.log('Table:', table);
-
-								let readyUsers = 0;
-								for (const user of users) {
-									// console.log('User:', user);
-									const liUser = document.createElement('li');
-									const deleteButton = document.createElement('button');
-									deleteButton.innerText = 'Delete';
-									deleteButton.addEventListener('click', function (event) {
-										fetch('/admin/users/delete?username=' + encodeURIComponent(user.name))
-											.then((resp) => resp.text())
-											.then((text) => {
-												// console.log(text);
-												refreshTables();
-											})
-											.catch((error) => {
-												const msg = 'Fetch error:' + error;
-												messagesDiv.innerHTML = msg;
-												console.error(msg);
-											});
-									});
-									liUser.appendChild(deleteButton);
-
-									const finishButton = document.createElement('button');
-									finishButton.innerText = 'Finish';
-									finishButton.addEventListener('click', function (event) {
-										fetch('/admin/users/finish?username=' + encodeURIComponent(user.name))
-											.then((resp) => resp.text())
-											.then((text) => {
-												// console.log(text);
-												refreshTables();
-											})
-											.catch((error) => {
-												const msg = 'Fetch error:' + error;
-												messagesDiv.innerHTML = msg;
-												console.error(msg);
-											});
-									});
-									liUser.appendChild(finishButton);
-
-									const readyButton = document.createElement('button');
-									readyButton.innerText = 'Ready';
-									readyButton.addEventListener('click', function (event) {
-										fetch('/admin/users/ready?username=' + encodeURIComponent(user.name))
-											.then((resp) => resp.text())
-											.then((text) => {
-												// console.log(text);
-												refreshTables();
-											})
-											.catch((error) => {
-												const msg = 'Fetch error:' + error;
-												messagesDiv.innerHTML = msg;
-												console.error(msg);
-											});
-									});
-									liUser.appendChild(readyButton);
-
-									const notReadyButton = document.createElement('button');
-									notReadyButton.innerText = 'Not Ready';
-									notReadyButton.addEventListener('click', function (event) {
-										fetch('/admin/users/notready?username=' + encodeURIComponent(user.name))
-											.then((resp) => resp.text())
-											.then((text) => {
-												// console.log(text);
-												refreshTables();
-											})
-											.catch((error) => {
-												const msg = 'Fetch error:' + error;
-												messagesDiv.innerHTML = msg;
-												console.error(msg);
-											});
-									});
-									liUser.appendChild(notReadyButton);
-
-									const spanInfo = document.createElement('span');
-									spanInfo.innerText =
-										` ${user.name}` +
-										` [IP: ${user.ip}]` +
-										` [Joined: ${new Date(user.joinedAt).toLocaleString()}]` +
-										` [Activity: ${new Date(user.lastActiveAt).toLocaleString()}]`;
-									if (user.ready) {
-										readyUsers++;
-										spanInfo.setAttribute('style', 'color: #006400');
-									} else {
-										spanInfo.setAttribute('style', 'color: #FF8C00');
-									}
-									liUser.appendChild(spanInfo);
-
-									ulUsers.appendChild(liUser);
-								}
-								liTable.innerText = table + ' (' + readyUsers + ' / ' + users.length + ' players)';
-
-								if (users.length) {
-									const tableReadyButton = document.createElement('button');
-									tableReadyButton.innerText = 'All Ready';
-									tableReadyButton.addEventListener('click', function (event) {
-										fetch('/admin/tables/ready?table=' + encodeURIComponent(table))
-											.then((resp) => resp.text())
-											.then((text) => {
-												// console.log(text);
-												refreshTables();
-											})
-											.catch((error) => {
-												const msg = 'Fetch error:' + error;
-												messagesDiv.innerHTML = msg;
-												console.error(msg);
-											});
-									});
-									liTable.appendChild(tableReadyButton);
-
-									const tableNotReadyButton = document.createElement('button');
-									tableNotReadyButton.innerText = 'All Not Ready';
-									tableNotReadyButton.addEventListener('click', function (event) {
-										fetch('/admin/tables/notready?table=' + encodeURIComponent(table))
-											.then((resp) => resp.text())
-											.then((text) => {
-												// console.log(text);
-												refreshTables();
-											})
-											.catch((error) => {
-												const msg = 'Fetch error:' + error;
-												messagesDiv.innerHTML = msg;
-												console.error(msg);
-											});
-									});
-									liTable.appendChild(tableNotReadyButton);
-
-									if (table != 'panama') {
-										const tableDeleteButton = document.createElement('button');
-										tableDeleteButton.innerText = 'Delete';
-										tableDeleteButton.addEventListener('click', function (event) {
-											fetch('/admin/tables/delete?table=' + encodeURIComponent(table))
-												.then((resp) => resp.text())
-												.then((text) => {
-													// console.log(text);
-													refreshTables();
-												})
-												.catch((error) => {
-													const msg = 'Fetch error:' + error;
-													messagesDiv.innerHTML = msg;
-													console.error(msg);
-												});
-										});
-										liTable.appendChild(tableDeleteButton);
-									}
-								}
-
-								liTable.appendChild(ulUsers);
-								ulTables.appendChild(liTable);
-							}
-						});
-
-				connectWebsocket();
-
-				const joinForm = document.getElementById('join');
-				if (!joinForm) {
-					console.error('join element not found');
-					return;
-				}
-				joinForm.addEventListener('submit', function (event) {
-					event.preventDefault();
-					const usernameElem = document.getElementById('username');
-					if (!usernameElem) {
-						console.error('username element not found');
-						return;
-					}
-					const usernameInput = /** @type {HTMLInputElement} */ (usernameElem);
-					const username = usernameInput.value;
-
-					fetch('/admin/users/join?username=' + encodeURIComponent(username))
-						.then((resp) => resp.text())
-						.then((text) => {
-							// console.log(text);
-							refreshTables();
-						})
-						.catch((error) => {
-							const msg = 'Fetch error:' + error;
-							messagesDiv.innerHTML = msg;
-							console.error(msg);
-						});
-				});
-
-				const loadFixturesButton = document.getElementById('load_fixtures');
-				if (!loadFixturesButton) {
-					console.error('load fixtures button not found');
-					return;
-				}
-				loadFixturesButton.addEventListener('click', function (event) {
-					fetch('/admin/users/fixtures')
-						.then((resp) => resp.text())
-						.then((text) => {
-							// console.log(text);
-							refreshTables();
-						})
-						.catch((error) => {
-							const msg = 'Fetch error:' + error;
-							messagesDiv.innerHTML = msg;
-							console.error(msg);
-						});
-				});
-
-				const clearTablesButton = document.getElementById('clear_tables');
-				if (!clearTablesButton) {
-					console.error('clear tables button not found');
-					return;
-				}
-				clearTablesButton.addEventListener('click', function (event) {
-					fetch('/admin/tables/clear')
-						.then((resp) => resp.text())
-						.then((text) => {
-							// console.log(text);
-							refreshTables();
-						})
-						.catch((error) => {
-							const msg = 'Fetch error:' + error;
-							messagesDiv.innerHTML = msg;
-							console.error(msg);
-						});
-				});
-
-				const generateTablesButton = document.getElementById('generate_tables');
-				if (!generateTablesButton) {
-					console.error('generate tables button not found');
-					return;
-				}
-				generateTablesButton.addEventListener('click', function (event) {
-					fetch('/admin/tables/generate')
-						.then((resp) => resp.text())
-						.then((text) => {
-							// console.log(text);
-							refreshTables();
-						})
-						.catch((error) => {
-							const msg = 'Fetch error:' + error;
-							messagesDiv.innerHTML = msg;
-							console.error(msg);
-						});
-				});
-
-				const shuffleTablesButton = document.getElementById('shuffle_tables');
-				if (!shuffleTablesButton) {
-					console.error('shuffle tables button not found');
-					return;
-				}
-				shuffleTablesButton.addEventListener('click', function (event) {
-					fetch('/admin/tables/shuffle')
-						.then((resp) => resp.text())
-						.then((text) => {
-							// console.log(text);
-							refreshTables();
-						})
-						.catch((error) => {
-							const msg = 'Fetch error:' + error;
-							messagesDiv.innerHTML = msg;
-							console.error(msg);
-						});
-				});
-
-				// const deleteStorageButton = document.getElementById('storage_delete');
-				// if (!deleteStorageButton) {
-				// 	console.error('delete storage button not found');
-				// 	return;
-				// }
-				// deleteStorageButton.addEventListener('click', function (event) {
-				// 	fetch('/admin/storage/delete')
-				// 		.then((resp) => resp.text())
-				// 		.then((text) => {
-				// 			// console.log(text);
-				// 			refreshTables();
-				// 		})
-				// 		.catch((error) => {
-				// 			const msg = 'Fetch error:' + error;
-				// 			messagesDiv.innerHTML = msg;
-				// 			console.error(msg);
-				// 		});
-				// });
-
-				const notifyAllButton = document.getElementById('notify_all');
-				if (!notifyAllButton) {
-					console.error('notify all button not found');
-					return;
-				}
-				notifyAllButton.addEventListener('click', function (event) {
-					fetch('/admin/notify')
-						.then((resp) => resp.text())
-						.then((text) => {
-							// console.log(text);
-							refreshTables();
-						})
-						.catch((error) => {
-							const msg = 'Fetch error:' + error;
-							messagesDiv.innerHTML = msg;
-							console.error(msg);
-						});
-				});
-			})();
-		</script>
-	</body>
 </html>

@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { replacer, shuffleArray } from './helpers';
-import { User, UserAndTable, setReadyOrNot, setIp, setActivity, setNotReady } from './user';
+import { User, UserAndTable, setActivity, setIp, setNotReady, setReadyOrNot } from './user';
 
 type Sessions = Map<WebSocket, { [key: string]: string }>;
 const DEFAULT_TABLE = 'panama';
@@ -349,8 +349,8 @@ export class MyDurableObject extends DurableObject<Env> {
 			webSocket: client,
 		});
 	}
-	// async clearDo(): Promise<void> {
-	// 	await this.ctx.storage.deleteAlarm();
-	// 	await this.ctx.storage.deleteAll();
-	// }
+	 async clearDo(): Promise<void> {
+	 	await this.ctx.storage.deleteAlarm();
+	 	await this.ctx.storage.deleteAll();
+	 }
 }
