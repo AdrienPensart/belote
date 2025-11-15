@@ -68,6 +68,7 @@ th {
 .user_ready {
 	color: #006400;
 }
+
 .user_not_ready {
 	color: #FF8C00;
 }
@@ -99,7 +100,6 @@ button:disabled {
 	border-radius: 10px;
 }
 
-<<<<<<< HEAD
 .button_container_admin {
 	display: flex;
 	gap: 10px;
@@ -108,8 +108,6 @@ button:disabled {
 }
 
 
-=======
->>>>>>> 02e0f8a (Update)
 .username_cell {
 	font-weight: bold;
 	color: var(--primary-color-dark);
@@ -149,6 +147,7 @@ button:disabled {
 	background-size: contain;
 	background: url('./img/nina.jpg');
 }
+
 .background_julien {
 	background-size: contain;
 	background: url('./img/julien.jpg') !important;
