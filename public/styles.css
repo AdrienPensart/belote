@@ -1,12 +1,21 @@
-:root{
+:root {
 	--primary-color-dark: #072a08;
 	--primary-color: #0f5311;
 	--primary-color-light: #66a468;
-	--secondary-color: #66a468;
+	--secondary-color: #2b3681;
+	--secondary-color-dark: #0a0d27;
+	--secondary-color-light: #3945b5;
 	--background-color: #f4f6f8;
 	--text-color: #333;
 	--hover-color: #e0e0e0;
-	--font-family: 'Segoe UI', sans-serif;}
+	--font-family: 'Segoe UI', sans-serif;
+}
+
+.secondary_background {
+	background-color: var(--secondary-color);
+	color: white;
+}
+
 
 html {
 	font-family: var(--font-family);
@@ -18,10 +27,10 @@ html {
 	border-radius: 8px;
 	overflow: hidden;
 	padding-top: 10px;
-	margin-bottom: 10px;	
+	margin-bottom: 10px;
 }
 
-.table_ready_status{
+.table_ready_status {
 	margin: 10px auto;
 	font-weight: bold;
 }
@@ -59,13 +68,13 @@ th {
 .user_ready {
 	color: #006400;
 }
+
 .user_not_ready {
 	color: #FF8C00;
 }
 
 button {
 	flex: 1;
-	margin: 0 10px;
 	background-color: var(--primary-color);
 	color: white;
 	border: none;
@@ -82,13 +91,22 @@ button:disabled {
 #username:disabled {
 	cursor: not-allowed;
 }
-#connected {
-margin: auto 20%;
-    display: flex;
-    margin-top: 20px;
-    padding: 10px;
-    border-radius: 10px;
+
+.button_container {
+	margin: auto 20%;
+	display: flex;
+	margin-top: 20px;
+	gap: 10px;
+	border-radius: 10px;
 }
+
+.button_container_admin {
+	display: flex;
+	gap: 10px;
+	margin-top: 20px;
+	border-radius: 10px;
+}
+
 
 .username_cell {
 	font-weight: bold;
@@ -129,6 +147,7 @@ margin: auto 20%;
 	background-size: contain;
 	background: url('./img/nina.jpg');
 }
+
 .background_julien {
 	background-size: contain;
 	background: url('./img/julien.jpg') !important;
