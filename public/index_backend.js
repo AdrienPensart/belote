@@ -70,6 +70,7 @@
 					vm.loadFixtures = function () { $http.get('/admin/users/fixtures').then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 					vm.clearTables = function () { $http.get('/admin/tables/clear').then(function () {}).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 					vm.generateTables = function () { $http.get('/admin/tables/generate').then(function () {vm.refreshTables();}).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
+					vm.reshuffleTables = function () { $http.get('/admin/tables/shuffle').then(function () {vm.refreshTables();}).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 					vm.deleteStorage = function () { $http.get('/admin/storage/delete').then(function () {}).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 					vm.notifyAll = function () { $http.get('/admin/notify').then(function () {}).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 
@@ -78,9 +79,9 @@
 					vm.userReady = function (username) { $http.get('/admin/users/ready?username=' + encodeURIComponent(username)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 					vm.userNotReady = function (username) { $http.get('/admin/users/notready?username=' + encodeURIComponent(username)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 
-					vm.tableReady = function (table) { $http.get('/admin/tables/ready?table=' + encodeURIComponent(table)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
-					vm.tableNotReady = function (table) { $http.get('/admin/tables/notready?table=' + encodeURIComponent(table)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
-					vm.tableDelete = function (table) { $http.get('/admin/tables/delete?table=' + encodeURIComponent(table)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
+					vm.adminTableReady = function (table) { $http.get('/admin/tables/ready?table=' + encodeURIComponent(table)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
+					vm.adminTableNotReady = function (table) { $http.get('/admin/tables/notready?table=' + encodeURIComponent(table)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
+					vm.adminTableDelete = function (table) { $http.get('/admin/tables/delete?table=' + encodeURIComponent(table)).then(function () { vm.refreshTables(); }).catch(function (err) { vm.messages = 'Fetch error: ' + err; }); };
 
 					// init
 					vm.connectWebsocket();

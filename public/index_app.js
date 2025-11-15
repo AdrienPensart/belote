@@ -79,7 +79,6 @@ angular.module('meltdownApp', [])
         if (!found) {
           vm.connected = false;
           vm.joinDisabled = false;
-          localStorage.removeItem('username');
         }
       });
     };

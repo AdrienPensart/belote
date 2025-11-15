@@ -21,16 +21,17 @@
 
 		<button class="secondary_background" id="load_fixtures"  type="button" ng-click="vm.loadFixtures()">Load users</button>
 		<button class="secondary_background" id="clear_tables" type="button" ng-click="vm.clearTables()">Clear tables</button>
-		<button class="secondary_background" id="storage_delete" type="button" ng-click="vm.deleteStorage()">Delete storage</button>
+<!-- 		<button class="secondary_background" id="storage_delete" type="button" ng-click="vm.deleteStorage()">Delete storage</button> -->
 		<button class="secondary_background" id="generate_tables" type="button" ng-click="vm.generateTables()">Distribute Tables</button>
+		<button class="secondary_background" id="shuffle_tables" type="button" ng-click="vm.reshuffleTables()">Reshuffle Tables</button>
 		<button class="secondary_background" id="notify_all" type="button" ng-click="vm.notifyAll()">Notify all</button>
 	</div>
 	<div id="tables" ng-repeat="(tableName, users) in vm.tables">
 		<div class="table_ready_status">
 			<span>{{tableName}} ({{vm.readyCount(users)}} / {{users.length}} players)</span>
-			<button ng-click="vm.tableReady(tableName)">Ready</button>
-			<button ng-click="vm.tableNotReady(tableName)">Not Ready</button>
-			<button ng-click="vm.tableDelete(tableName)">Delete</button>
+			<button ng-click="vm.adminTableReady(tableName)">Ready</button>
+			<button ng-click="vm.adminTableNotReady(tableName)">Not Ready</button>
+			<button ng-click="vm.adminTableDelete(tableName)">Delete</button>
 		</div>
 		<table class="tables">
 			<thead>
