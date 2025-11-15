@@ -172,12 +172,48 @@
 									});
 									liUser.appendChild(notReadyButton);
 
+									const canPlayTwoTablesButton = document.createElement('button');
+									canPlayTwoTablesButton.innerHTML = 'Can play two tables!';
+									canPlayTwoTablesButton.addEventListener('click', function (event) {
+										fetch('/admin/users/toggleCanPlayTwoTables?username=' + encodeURIComponent(user.name))
+											.then((resp) => resp.text())
+											.then((text) => {
+												// console.log(text);
+												refreshTables();
+											})
+											.catch((error) => {
+												const msg = 'Fetch error:' + error;
+												messagesDiv.innerHTML = msg;
+												console.error(msg);
+											});
+									});
+									liUser.appendChild(canPlayTwoTablesButton);
+
+									const canPlayTarotButton = document.createElement('button');
+									canPlayTarotButton.innerHTML = 'Can play tarot!';
+									canPlayTarotButton.addEventListener('click', function (event) {
+										fetch('/admin/users/toggleCanPlayTarot?username=' + encodeURIComponent(user.name))
+											.then((resp) => resp.text())
+											.then((text) => {
+												// console.log(text);
+												refreshTables();
+											})
+											.catch((error) => {
+												const msg = 'Fetch error:' + error;
+												messagesDiv.innerHTML = msg;
+												console.error(msg);
+											});
+									});
+									liUser.appendChild(canPlayTarotButton);
+
 									const spanInfo = document.createElement('span');
 									spanInfo.innerText =
 										` ${user.name}` +
 										` [IP: ${user.ip}]` +
 										` [Joined: ${new Date(user.joinedAt).toLocaleString()}]` +
-										` [Activity: ${new Date(user.lastActiveAt).toLocaleString()}]`;
+										` [Activity: ${new Date(user.lastActiveAt).toLocaleString()}]`+
+										` [CanPlayTarot: ${user.canPlayTarot}]`+
+										` [CanPlayTwoTables: ${user.canPlayTwoTables}]`;
 									if (user.ready) {
 										readyUsers++;
 										spanInfo.setAttribute('style', 'color: #006400');
@@ -224,6 +260,8 @@
 											});
 									});
 									liTable.appendChild(tableNotReadyButton);
+
+									
 
 									if (table != 'panama') {
 										const tableDeleteButton = document.createElement('button');

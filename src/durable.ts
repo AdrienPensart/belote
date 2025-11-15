@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { replacer, shuffleArray } from './helpers';
-import { User, UserAndTable, setReadyOrNot, setIp, setActivity, setNotReady } from './user';
+import { User, UserAndTable, setReadyOrNot, setIp, setActivity, setNotReady, toggleCanPlayTarot, toggleCanPlayTwoTables } from './user';
 
 type Sessions = Map<WebSocket, { [key: string]: string }>;
 const DEFAULT_TABLE = 'panama';
@@ -78,13 +78,7 @@ export class MyDurableObject extends DurableObject<Env> {
 		await this.ctx.storage.put('tables', tables);
 		return 200;
 	}
-	async setUserReadyOrNot(searchedUsername: string, ready: boolean, ip?: string): Promise<boolean> {
-		const tables = (await this.ctx.storage.get<Tables>('tables')) || new Map<string, Table>();
-		if (tables.size == 0) {
-			return false;
-		}
-
-		let found = false;
+	findUserAndTable(tables: Tables, searchedUsername: string, ip?: string): [Table, User] | undefined{
 		outerLoop: for (const [tableName, users] of tables) {
 			innerLoop: for (const [username, user] of users) {
 				if (username != searchedUsername) {
@@ -94,15 +88,61 @@ export class MyDurableObject extends DurableObject<Env> {
 					continue innerLoop;
 				}
 				console.log(`user ${user.name} found on table ${tableName}`);
-				found = true;
-				setReadyOrNot(user, ready);
-				if (ip !== undefined) {
-					setActivity(user);
-				}
-				break outerLoop;
+				return [tables.get(tableName)!, user];
 			}
 		}
-		if (found) {
+		return undefined;
+	}
+	async toggleCanPlayTarot(searchedUsername: string, ip?: string): Promise<boolean> {
+		const tables = (await this.ctx.storage.get<Tables>('tables')) || new Map<string, Table>();
+		if (tables.size == 0) {
+			return false;
+		}
+
+		let foundResult = this.findUserAndTable(tables, searchedUsername,ip);
+
+		let found = !!foundResult;
+		if (foundResult) {
+			toggleCanPlayTarot(foundResult[1]);
+			if (ip !== undefined) {
+				setActivity(foundResult[1]);
+			}
+			await this.ctx.storage.put('tables', tables);
+		}
+		return found;
+	}
+	async toggleCanPlayTwoTables(searchedUsername: string, ip?: string): Promise<boolean> {
+		const tables = (await this.ctx.storage.get<Tables>('tables')) || new Map<string, Table>();
+		if (tables.size == 0) {
+			return false;
+		}
+
+		let foundResult = this.findUserAndTable(tables, searchedUsername,ip);
+
+		let found = !!foundResult;
+		if (foundResult) {
+			toggleCanPlayTwoTables(foundResult[1]);
+			if (ip !== undefined) {
+				setActivity(foundResult[1]);
+			}
+			await this.ctx.storage.put('tables', tables);
+		}
+		return found;
+	}
+	async setUserReadyOrNot(searchedUsername: string, ready: boolean, ip?: string): Promise<boolean> {
+		const tables = (await this.ctx.storage.get<Tables>('tables')) || new Map<string, Table>();
+		if (tables.size == 0) {
+			return false;
+		}
+
+		let foundResult = this.findUserAndTable(tables, searchedUsername,ip);
+
+		let found = !!foundResult;
+		if (foundResult) {
+			setReadyOrNot(foundResult[1], ready);
+			if (ip !== undefined) {
+				setActivity(foundResult[1]);
+			}
 			await this.ctx.storage.put('tables', tables);
 		}
 		return found;
@@ -210,9 +250,16 @@ export class MyDurableObject extends DurableObject<Env> {
 			}
 		}
 
-		readyUsers = shuffleArray(readyUsers);
-		let tableIndex = 1;
-
+		this.affectTables(tables, shuffleArray(readyUsers), 1);
+		await this.ctx.storage.put('tables', tables);
+		return true;
+	}
+	
+	affectTables(tables: Tables, users: User[], currentTable:number): void  {
+		if (users.length === 0) {
+			return;
+		}
+		var currentTableSize = users.length < 8 ? users.length : (users.length%4) + 4;
 		const assignTable = function (tableName: string, users: User[]) {
 			let table = tables.get(tableName);
 			if (!table) {
@@ -223,44 +270,43 @@ export class MyDurableObject extends DurableObject<Env> {
 				table.set(user.name, user);
 			}
 		};
-
-		while (readyUsers.length > 0) {
-			if (readyUsers.length == 7) {
-				let tableDe7 = readyUsers.splice(0, 7);
-				assignTable('Table de 7', tableDe7);
-				break;
-			} else if (readyUsers.length == 6) {
-				let tableDe6 = readyUsers.splice(0, 6);
-				assignTable('Table de 6', tableDe6);
-				break;
-			} else if (readyUsers.length == 5) {
-				let tableDe5 = readyUsers.splice(0, 5);
-				assignTable('Table de 5', tableDe5);
-				break;
-			} else if (readyUsers.length == 3) {
-				let tableDe3 = readyUsers.splice(0, 3);
-				assignTable(DEFAULT_TABLE, tableDe3);
-				break;
-			} else if (readyUsers.length == 2) {
-				let tableDe2 = readyUsers.splice(0, 2);
-				assignTable(DEFAULT_TABLE, tableDe2);
-				break;
-			} else if (readyUsers.length == 1) {
-				let tableDe1 = readyUsers.splice(0, 1);
-				assignTable(DEFAULT_TABLE, tableDe1);
-				break;
-			} else {
-				const tableName = `Table ${tableIndex}`;
-				if (!tables.has(tableName)) {
-					let tableDe4 = readyUsers.splice(0, 4);
-					assignTable(tableName, tableDe4);
+		let playersSelected: User[] = [];
+		if (currentTableSize <= 3) {
+			playersSelected = users;
+		} else {
+			if (currentTableSize == 5) {
+				let tarotPlayers = users.filter((user) => user.canPlayTarot);
+				if (tarotPlayers.length >= 5) {
+					playersSelected = tarotPlayers.splice(0,5);
+				} else {
+					// Le pauvre gars seul qui va aller au panama
+					playersSelected.push(users[users.length -1]);
 				}
+			} else {
+				if (currentTableSize == 7) {
+					let usersThanCanPlayTwoTables = users.filter((user) => user.canPlayTwoTables);
+					if (usersThanCanPlayTwoTables.length > 0 ) {
+						playersSelected = [usersThanCanPlayTwoTables[0],...users.filter((user) => user.name !== usersThanCanPlayTwoTables[0].name).slice(0,6)];
+					} else {
+						// 3 pauvres gars seul qui va aller au panama
+						playersSelected.push(...users.slice(0,3));
+					}
+				} else {
+					playersSelected = users.splice(0,currentTableSize);
+				}
+				
 			}
-			tableIndex++;
 		}
-		await this.ctx.storage.put('tables', tables);
-		return true;
+
+		if (playersSelected.length < 4) {
+			assignTable(DEFAULT_TABLE,playersSelected);
+		} else {
+			assignTable(`Table ${currentTable}`,playersSelected);
+		}
+		
+		this.affectTables(tables, users.filter((user) => !playersSelected.find((userSelected) => userSelected.name === user.name)), currentTable+1);
 	}
+
 	async adminShuffleTables(): Promise<boolean> {
 		const tables = (await this.ctx.storage.get<Tables>('tables')) || new Map<string, Table>();
 		if (tables.size == 0) {

@@ -17,13 +17,24 @@ export function setActivity(user: User) {
 	user.lastActiveAt = Date.now();
 }
 
-export function setReadyOrNot(user: User, ready: boolean) {
+export function setReadyOrNot(user: User, ready: boolean): boolean  {
 	user.ready = ready;
+	return user.ready;
+}
+export function toggleCanPlayTarot(user: User): boolean {
+	user.canPlayTarot = !user.canPlayTarot;
+	return user.canPlayTarot;
+}
+export function toggleCanPlayTwoTables(user: User): boolean {
+	user.canPlayTwoTables = !user.canPlayTwoTables;
+	return user.canPlayTwoTables;
 }
 
 export class User {
 	name: string;
 	ready: boolean;
+	canPlayTarot: boolean;
+	canPlayTwoTables: boolean;
 	joinedAt: number;
 	lastActiveAt: number | undefined;
 	ip: string | undefined;
@@ -36,6 +47,8 @@ export class User {
 		}
 		this.ip = ip;
 		this.ready = false;
+		this.canPlayTarot = false;
+		this.canPlayTwoTables = false;
 	}
 }
 

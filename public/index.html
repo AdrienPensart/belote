@@ -118,15 +118,18 @@
 									if (!user.ip) {
 										liUser.innerText += ' added by admin';
 									}
+									if (user.canPlayTarot) {
+										liUser.innerText += ' plays tarot';
+									}
+									if (user.canPlayTwoTables) {
+										liUser.innerText += ' can play two tables';
+									}
 									if (user.name == localUsername) {
 										found = true;
 									}
 									ulUsers.appendChild(liUser);
 								}
 								liTable.innerText = table + ' (' + readyUsers + ' / ' + users.length + ' ready)';
-								if (users.length == 5) {
-									liTable.innerText += ' : apprenez le Tarot a 5 :p';
-								}
 								liTable.appendChild(ulUsers);
 								ulTables.appendChild(liTable);
 							}
@@ -188,6 +191,37 @@
 						});
 					});
 					connectedDiv.appendChild(readyButton);
+					const canPlayTwoTablesButton = document.createElement('button');
+					canPlayTwoTablesButton.innerHTML = 'Can play two tables!';
+					canPlayTwoTablesButton.addEventListener('click', function (event) {
+						fetch('/me/toggleCanPlayTwoTables?username=' + encodeURIComponent(username)).then((response) => {
+							if (response.status == 404) {
+								localStorage.removeItem('username');
+								connectedDiv.innerHTML = '';
+								joinButtonInput.disabled = false;
+							} else {
+								console.log('User toggleCanPlayTwoTables:', username);
+								refreshTables();
+							}
+						});
+					});
+					connectedDiv.appendChild(canPlayTwoTablesButton);
+
+					const canPlayTarotButton = document.createElement('button');
+					canPlayTarotButton.innerHTML = 'Can play tarot!';
+					canPlayTarotButton.addEventListener('click', function (event) {
+						fetch('/me/toggleCanPlayTarot?username=' + encodeURIComponent(username)).then((response) => {
+							if (response.status == 404) {
+								localStorage.removeItem('username');
+								connectedDiv.innerHTML = '';
+								joinButtonInput.disabled = false;
+							} else {
+								console.log('User toggleCanPlayTarot:', username);
+								refreshTables();
+							}
+						});
+					});
+					connectedDiv.appendChild(canPlayTarotButton);
 				};
 
 				const username = localStorage.getItem('username');
