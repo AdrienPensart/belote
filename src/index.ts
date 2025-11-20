@@ -25,6 +25,7 @@ export default {
 		const internalError = new Response(JSON.stringify({ message: `internal error` }), { status: 500 });
 		const unauthorizedError = new Response(JSON.stringify({ message: `unauthorized` }), { status: 401 });
 		const missingUsername = new Response(JSON.stringify({ message: 'missing username' }), { status: 400 });
+		// unchanged body MUST be null
 		const unchanged = new Response(null, { status: 304 });
 		const ip = request.headers.get(IP_HEADER) || 'unknown';
 		const username = url.searchParams.get('username');
@@ -147,9 +148,9 @@ export default {
 					const found = await stub.toggleCanPlayTarot(username);
 					if (found) {
 						await stub.notifyAll(`user ${username} toggleCanPlayTarot!`);
-						return new Response(`🎉 User ${username} toggleCanPlayTarot!`, success);
+						return new Response(JSON.stringify({ message: `🎉 User ${username} toggleCanPlayTarot!` }), success);
 					} else {
-						return new Response(`User ${username} not found`, { status: 404 });
+						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
 					}
 				});
 			}
@@ -161,9 +162,9 @@ export default {
 					const found = await stub.toggleCanPlayTwoTables(username);
 					if (found) {
 						await stub.notifyAll(`user ${username} toggleCanPlayTwoTables!`);
-						return new Response(`🎉 User ${username} toggleCanPlayTwoTables!`, success);
+						return new Response(JSON.stringify({ message: `🎉 User ${username} toggleCanPlayTwoTables!` }), success);
 					} else {
-						return new Response(`User ${username} not found`, { status: 404 });
+						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
 					}
 				});
 			}
@@ -191,23 +192,6 @@ export default {
 					if (ready) {
 						await stub.notifyAll(`user ${username} NOT ready`);
 						return new Response(JSON.stringify({ message: `🎉 User ${username} NOT ready!` }), success);
-<<<<<<< HEAD
-					} else {
-						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-					}
-				});
-			}
-			case '/admin/users/inactive': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const inactive = await stub.adminSetUserInactive(username);
-					if (inactive) {
-						await stub.notifyAll(`user ${username} set inactive`);
-						return new Response(`🎉 User ${username} set inactive!`, success);
-=======
->>>>>>> 33b9949 (Update the front end)
 					} else {
 						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
 					}
@@ -329,17 +313,6 @@ export default {
 						await stub.notifyAll(`tables generated`);
 					}
 					return new Response(JSON.stringify({ message: `🎉 New tables generated` }), success);
-<<<<<<< HEAD
-				});
-			}
-			case '/admin/tables/shuffle': {
-				return authenticate(request, env, async () => {
-					if (await stub.adminShuffleTables()) {
-						await stub.notifyAll(`tables shuffled`);
-					}
-					return new Response('🎉 Tables shuffled', success);
-=======
->>>>>>> 33b9949 (Update the front end)
 				});
 			}
 			case '/admin/meltdown': {
