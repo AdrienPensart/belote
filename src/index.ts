@@ -1,11 +1,6 @@
 import { MyDurableObject } from './durable';
-import { authenticate } from './helpers';
-
+import { User } from './db/schema.types';
 export interface Env {
-	AUTHENTICATION: string;
-	ADMIN_USER: string;
-	ADMIN_PASSWORD: string;
-	PLAYERS: string;
 	MY_DURABLE_OBJECT: DurableObjectNamespace<MyDurableObject>;
 }
 
@@ -22,325 +17,159 @@ export { MyDurableObject };
 export default {
 	async fetch(request: Request, env: Env, _ctx): Promise<Response> {
 		const url = new URL(request.url);
-		const internalError = new Response(JSON.stringify({ message: `internal error` }), { status: 500 });
-		const unauthorizedError = new Response(JSON.stringify({ message: `unauthorized` }), { status: 401 });
-		const missingUsername = new Response(JSON.stringify({ message: 'missing username' }), { status: 400 });
-		const ip = request.headers.get(IP_HEADER) || 'unknown';
-		const username = url.searchParams.get('username');
-		const userReady = (username: string): string => {
-			if (username) {
-				return `🎉 user ${username} ready!`;
-			}
-			return 'user ready!';
-		};
-		const userNotReady = (username: string): string => {
-			if (username) {
-				return `🎉 user ${username} not ready!`;
-			}
-			return 'user not ready!';
-		};
-
 		const stub = env.MY_DURABLE_OBJECT.getByName('belote');
 		if (!stub) {
 			return new Response(JSON.stringify({ message: 'Durable Object not found' }), { status: 500 });
 		}
+		if (url.pathname==='/auth') {
+			let response = await stub.authenticate(request);
+			await stub.notifyAll(`user connected!`);
+			return response;
+		}
+		if (url.pathname==='/createAccount') {
+			let response = stub.createAccount(request);
+			await stub.notifyAll(`user connected!`);
+			return response;
+		}
+		if (url.pathname.indexOf('favicon') !== -1) {
+			return new Response(JSON.stringify({ message: `url ${url} not found` }), { status: 404 });
+		}
+		let adminAuth = url.pathname.indexOf("/admin/") !== -1;
+		const authorization = request.headers.get('Authorization') ?? new URL(request.url).searchParams.get('auth_token')?.trim();
+		let userOrResponse = await stub.validateToken(authorization,adminAuth);
+		if (userOrResponse instanceof Response) {
+			return userOrResponse;
+		}
+		let user : User = userOrResponse;
 		switch (url.pathname) {
-			// global and unauthenticated
-			case '/public/tables': {
+			case '/socket': {
+				try{
+					let response = await stub.fetch(request);
+					return response;
+				} catch(e) {
+					console.log(e);
+				}
+				
+			}
+			case '/me': {
+				return new Response(JSON.stringify(user));
+			}
+			case '/passwordChange': {
+				return await stub.passwordChange(request, user.pseudo,false);
+			}
+			case '/user/stats': {
+				return new Response(JSON.stringify(await stub.getStats(user)));
+			}
+			case '/tables': {
 				const tables = await stub.getTables();
-				return new Response(tables, success);
+				return new Response(JSON.stringify(tables), success);
 			}
-
-			// for users
-			case '/me/ready': {
-				if (!username) {
-					return missingUsername;
+			case '/user/changeUserState': {
+				await stub.changeUserState(request,user.pseudo)
+				await stub.notifyAll(`user ${user.pseudo} toggleUserState!`);
+				return new Response(JSON.stringify({ message: `🎉 User changed state !` }), success);
+			}
+			case '/user/quit': {
+				await stub.quit(user.pseudo);
+				await stub.notifyAll(`user ${user.pseudo} disconnected`);
+				return new Response(JSON.stringify({ message: `🎉 User ${user.pseudo} disconnected!` }), success);
+			}
+			case '/user/finish': {
+				const winningTeam = url.searchParams.get('winningTeam');
+				if (!winningTeam) {
+					return new Response(JSON.stringify({ message: 'missing winningTeam' }), { status: 400 });
 				}
-				if (await stub.setUserReadyOrNot(username, true, ip)) {
-					await stub.notifyAll(userReady(username));
+				if (!url.searchParams.get('tableId')) {
+					return new Response(JSON.stringify({ message: 'missing tableId' }), { status: 400 });
 				}
-				return new Response(JSON.stringify({ message: `🎉 User ready!` }), success);
+				await stub.finish(parseInt(url.searchParams.get('tableId')!!), winningTeam, user.pseudo);
+				return new Response('ok', { status: 200 });
 			}
-			case '/me/notready': {
-				if (!username) {
-					return missingUsername;
-				}
-				if (await stub.setUserReadyOrNot(username, false, ip)) {
-					await stub.notifyAll(userNotReady(username));
-				}
-				return new Response(JSON.stringify({ message: `🎉 User not ready!` }), success);
+			case '/alarm' :{
+				return new Response(JSON.stringify({secondsLeft : await stub.timeLeftUntilAlarm()}), { status: 200 });
 			}
-			case '/me/toggleCanPlayTwoTables': {
-				if (!username) {
-					return missingUsername;
-				}
-				if (await stub.toggleCanPlayTwoTables(username, ip)) {
-					await stub.notifyAll(`user ${username} toggleCanPlayTwoTables!`);
-				}
-				return new Response(JSON.stringify({ message: `🎉 User can play on 2 tables!` }), success);
+			case '/admin/alarm/add': {
+				await stub.addTimer(request);
+				await stub.notifyAll(`Set alarm`);
+				return new Response('ok', { status: 200 });
 			}
-			case '/me/toggleCanPlayTarot': {
-				if (!username) {
-					return missingUsername;
-				}
-				if (await stub.toggleCanPlayTarot(username, ip)) {
-					await stub.notifyAll(`user ${username} toggleCanPlayTarot!`);
-				}
-				return new Response(JSON.stringify({ message: `🎉 User can play tarot !` }), success);
+			case '/admin/alarm/delete': {
+				await stub.removeTimer();
+				await stub.notifyAll(`Removed alarm`);
 			}
-			case '/me/join': {
-				if (!username) {
-					return missingUsername;
-				}
-				const join = await stub.join(username, ip);
-				if (join) {
-					await stub.notifyAll(`user ${username} joined the Meltdown`);
-					return new Response(JSON.stringify({ message: `🎉 New user ${username} joined!` }), success);
-				}
-				return new Response(JSON.stringify({ message: `🎉 User ${username} already existed!` }), success);
-			}
-			case '/me/meltdown': {
-				if (!username) {
-					return missingUsername;
-				}
-				const response = stub.fetch(request);
-				console.log(`user ${username} connected to Meltdown room`);
-				return response;
-			}
-			case '/me/quit': {
-				if (!username) {
-					return missingUsername;
-				}
-				const quit = await stub.quit(username, ip);
-				if (quit) {
-					await stub.notifyAll(`user ${username} quit the Meltdown`);
-					return new Response(JSON.stringify({ message: `🎉 User ${username} left!` }), success);
-				} else {
-					return new Response(JSON.stringify({ message: `User ${username} not found or not authorized` }), { status: 404 });
-				}
-			}
-			case '/me/finish': {
-				if (!username) {
-					return missingUsername;
-				}
-				const code = await stub.finish(username, ip);
-				switch (code) {
-					case 401:
-						return unauthorizedError;
-					case 404:
-						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-					case 200:
-						await stub.notifyAll(`user ${username} and its friends at the same table finished their game`);
-						return new Response(JSON.stringify({ message: `🎉 User ${username} moved!` }), success);
-					default:
-						return internalError;
-				}
-			}
-
-			// ADMIN with username param
-			case '/admin/users/join': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const join = await stub.join(username, undefined);
-					if (join) {
-						await stub.notifyAll(`user ${username} joined`);
-						return new Response(JSON.stringify({ message: `🎉 User ${username} joined!` }), success);
-					}
-					return new Response(JSON.stringify({ message: `🎉 User ${username} already existed!` }), success);
-				});
-			}
-			case '/admin/users/toggleCanPlayTarot': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const found = await stub.toggleCanPlayTarot(username);
-					if (found) {
-						await stub.notifyAll(`user ${username} toggleCanPlayTarot!`);
-						return new Response(JSON.stringify({ message: `🎉 User ${username} toggleCanPlayTarot!` }), success);
-					} else {
-						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-					}
-				});
-			}
-			case '/admin/users/toggleCanPlayTwoTables': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const found = await stub.toggleCanPlayTwoTables(username);
-					if (found) {
-						await stub.notifyAll(`user ${username} toggleCanPlayTwoTables!`);
-						return new Response(JSON.stringify({ message: `🎉 User ${username} toggleCanPlayTwoTables!` }), success);
-					} else {
-						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-					}
-				});
-			}
-			case '/admin/users/ready': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const ready = await stub.setUserReadyOrNot(username, true, undefined);
-					if (ready) {
-						await stub.notifyAll(userReady(username));
-						return new Response(JSON.stringify({ message: userReady(username) }), success);
-					} else {
-						// Convert to a generic message
-						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-					}
-				});
-			}
-			case '/admin/users/notready': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const ready = await stub.setUserReadyOrNot(username, false, undefined);
-					if (ready) {
-						await stub.notifyAll(userNotReady(username));
-						return new Response(JSON.stringify({ message: userNotReady(username) }), success);
-					} else {
-						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-					}
-				});
-			}
-			case '/admin/users/delete': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const deleted = await stub.quit(username, undefined);
-					if (deleted) {
-						await stub.notifyAll(`user ${username} deleted from Meltdown`);
-						return new Response(JSON.stringify({ message: `🎉 User ${username} deleted!` }), success);
-					} else {
-						return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-					}
-				});
-			}
-			case '/admin/users/finish': {
-				return authenticate(request, env, async () => {
-					if (!username) {
-						return missingUsername;
-					}
-					const code = await stub.finish(username, undefined);
-					switch (code) {
-						case 404:
-							return new Response(JSON.stringify({ message: `User ${username} not found` }), { status: 404 });
-						case 200:
-							await stub.notifyAll(`user ${username} finished its game`);
-							return new Response(JSON.stringify({ message: `🎉 User ${username} finished its game!` }), success);
-						default:
-							return internalError;
-					}
-				});
-			}
-
-			// ADMIN without username param
 			case '/admin/users': {
-				return authenticate(request, env, async () => {
-					const users = await stub.getUsers();
-					return new Response(users, success);
-				});
+				return new Response(JSON.stringify(await stub.getUserList()), { status: 200 });
 			}
-			case '/admin/notify': {
-				return authenticate(request, env, async () => {
-					await stub.notifyAll('force notify all');
-					return new Response(JSON.stringify({ message: `🎉 Users notified!` }), success);
-				});
+			case '/admin/users/toggleUserState': {
+				const pseudo = url.searchParams.get('pseudo');
+				if (!pseudo) {
+					return new Response(JSON.stringify({ message: 'missing pseudo' }), { status: 400 });
+				}
+				await stub.changeUserState(request, pseudo);
+				await stub.notifyAll(`User ${pseudo} changed state`);
+				return new Response(JSON.stringify({ message: `🎉 User changed state!` }), success);
 			}
-			case '/admin/users/fixtures': {
-				return authenticate(request, env, async () => {
-					const players = JSON.parse(env.PLAYERS);
-					for (let username of players.usernames) {
-						await stub.join(username, undefined);
-					}
-					await stub.notifyAll('fixtures loaded');
-					return new Response(JSON.stringify({ message: `🎉 Fixture users loaded!` }), success);
-				});
+			case '/admin/users/passwordChange':
+				const pseudo = url.searchParams.get('pseudo');
+				if (!pseudo) {
+					return new Response(JSON.stringify({ message: 'missing pseudo' }), { status: 400 });
+				}
+				return await stub.passwordChange(request, pseudo, true);
+			case '/admin/users/finish': {
+				if (!url.searchParams.get('tableId')) {
+					return new Response(JSON.stringify({ message: 'missing tableId' }), { status: 400 });
+				}
+				const winningTeam = url.searchParams.get('winningTeam');
+				if (!winningTeam) {
+					return new Response(JSON.stringify({ message: 'missing winningTeam' }), { status: 400 });
+				}
+				await stub.finish(parseInt(url.searchParams.get('tableId')!!), winningTeam, undefined);
+				await stub.notifyAll(`table finished`);
+				return new Response('ok', { status: 200 });
+			}
+			case '/admin/users/quit': {
+				const pseudo = url.searchParams.get('pseudo');
+				if (!pseudo) {
+					return new Response(JSON.stringify({ message: 'missing pseudo' }), { status: 400 });
+				}
+				await stub.notifyAll(`user ${pseudo} disconnected`);
+				await stub.quit(pseudo);
+				return new Response('ok', { status: 200 });
+			}
+			case '/admin/tables/changeReadyState': {
+				await stub.changeReadyState(request);
+				await stub.notifyAll(`tables ready`);
+				return new Response(JSON.stringify({ message: `🎉 Tables ready` }), success);
 			}
 			case '/admin/tables/delete': {
-				return authenticate(request, env, async () => {
-					const table = url.searchParams.get('table');
-					if (!table) {
-						return new Response(JSON.stringify({ message: 'missing table name' }), { status: 400 });
-					}
-					console.log(table);
-					const deleted = await stub.adminDeleteTable(table);
-					if (!deleted) {
-						return new Response(JSON.stringify({ message: `table was NOT deleted!` }), success);
-					}
-					await stub.notifyAll('table deleted');
-					return new Response(JSON.stringify({ message: `🎉 table deleted!` }), success);
-				});
-			}
-			case '/admin/tables/notready': {
-				return authenticate(request, env, async () => {
-					const table = url.searchParams.get('table');
-					if (!table) {
-						return new Response(JSON.stringify({ message: 'missing table name' }), { status: 400 });
-					}
-					console.log(table);
-					const notReady = await stub.adminTableNotReady(table);
-					if (!notReady) {
-						return new Response(JSON.stringify({ message: `table WAS NOT ready!` }), success);
-					}
-					await stub.notifyAll('table not ready');
-					return new Response(JSON.stringify({ message: `🎉 table not ready!` }), success);
-				});
-			}
-			case '/admin/tables/ready': {
-				return authenticate(request, env, async () => {
-					const table = url.searchParams.get('table');
-					if (!table) {
-						return new Response(JSON.stringify({ message: 'missing table name' }), { status: 400 });
-					}
-					console.log(table);
-					const ready = await stub.adminTableReady(table);
-					if (!ready) {
-						return new Response(JSON.stringify({ message: `table WAS ready!` }), success);
-					}
-					await stub.notifyAll('table ready');
-					return new Response(JSON.stringify({ message: `🎉 table ready!` }), success);
-				});
+				if (!url.searchParams.get('tableId')) {
+					return new Response(JSON.stringify({ message: 'missing tableId' }), { status: 400 });
+				}
+				await stub.deleteTable(parseInt(url.searchParams.get('tableId')!!));
+				await stub.notifyAll(`table deleted`);
+				return new Response(JSON.stringify({ message: `🎉 Table deleted` }), success);
 			}
 			case '/admin/tables/clear': {
-				return authenticate(request, env, async () => {
-					if (await stub.adminClearAllTables()) {
-						await stub.notifyAll(`tables cleared`);
-					}
-					return new Response(JSON.stringify({ message: `🎉 Tables cleared` }), success);
-				});
+				await stub.adminDeleteAllTables()
+				await stub.notifyAll(`tables cleared`);
+				return new Response(JSON.stringify({ message: `🎉 Tables cleared` }), success);
 			}
 			case '/admin/tables/generate': {
-				return authenticate(request, env, async () => {
-					if (await stub.adminGenerateTables()) {
-						await stub.notifyAll(`tables generated`);
-					}
-					return new Response(JSON.stringify({ message: `🎉 New tables generated` }), success);
-				});
+				await stub.adminGenerateTables()
+				await stub.notifyAll(`tables generated`);
+				return new Response(JSON.stringify({ message: `🎉 New tables generated` }), success);
 			}
 			case '/admin/tables/shuffle': {
-				return authenticate(request, env, async () => {
-					if (await stub.adminShuffleTables()) {
-						await stub.notifyAll(`tables reshuffled`);
-					}
-					return new Response(JSON.stringify({ message: `🎉 New tables reshuffled` }), success);
-				});
+				await stub.adminShuffleTables();
+				await stub.notifyAll(`tables shuffled`);
+				return new Response(JSON.stringify({ message: `🎉 New tables reshuffled` }), success);
 			}
-			case '/admin/meltdown': {
-				return authenticate(request, env, async () => {
-					const response = stub.fetch(request);
-					console.log('admin user connected to room');
-					return response;
-				});
+			case '/admin/notify': {
+				await stub.notifyAll('force notify all');
+				return new Response(JSON.stringify({ message: `🎉 Users notified!` }), success);
 			}
 			default:
 				return new Response(JSON.stringify({ message: `url ${url} not found` }), { status: 404 });
 		}
-	},
+	}
 } satisfies ExportedHandler<Env>;

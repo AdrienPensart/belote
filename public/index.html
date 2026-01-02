@@ -9,27 +9,27 @@
 		<script src="index_app.js"></script>
 	</head>
 	<body ng-controller="MainController as ctrl">
-		<form ng-submit="ctrl.join()">
-			<label for="username">Adepte:</label>
-			<input type="text" ng-model="ctrl.usernameInput" ng-disabled="ctrl.joinDisabled" placeholder="Ton ostie de pseudo" required />
-			<button type="submit" ng-disabled="ctrl.joinDisabled">Je rejoins la secte</button>
-		</form>
-
+		
 		<div class="button_container">
-			<button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.quit()">Quitter Meltdown ({{ctrl.username}})</button>
-			<button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.finish()">Partie terminée (return to Panama)!</button>
-			<button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.ready()">Je suis prêt!</button>
-			<button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.notready()">PAS Prêt!</button>
-			<button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.toggleCanPlayTarot()">Tarot! (si 5)</button>
-			<button ng-if="ctrl.connected" class="secondary_background" ng-click="ctrl.toggleCanPlayTwoTables()">
-				Deux tables! j'suis capable
-			</button>
+			<h1 ng-show="ctrl.timer>0" style="margin: 40px auto">Tirage automatique des tables dans {{ctrl.getTimerRendering(ctrl.timer)}}</h1>
+		</div>
+		<div class="button_container" ng-if="!ctrl.onTable">
+			<button class="secondary_background" ng-click="ctrl.quit()">Quitter Meltdown ({{ctrl.user.pseudo}})</button>
+			<button class="secondary_background" ng-click="ctrl.ready(true)">Je suis prêt!</button>
+			<button class="secondary_background" ng-click="ctrl.ready(false)">PAS Prêt!</button>
+			<button class="secondary_background" ng-click="ctrl.canPlayTarot(true)">Tarot! (si 5)</button>
+			<button class="secondary_background" ng-click="ctrl.canPlayTarot(false)">Pas de tarot! (si 5)</button>
+			<button class="secondary_background" ng-click="ctrl.canPlayTwoTables(true)">Deux tables! j'suis capable</button>
+			<button class="secondary_background" ng-click="ctrl.canPlayTwoTables(false)">Deux tables! j'suis pas capable</button>
 		</div>
 
 		<br />
 		<div id="tables">
 			<div ng-repeat="table in ctrl.tables">
-				<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
+				<div class="table_ready_status">
+					<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
+				</div>
+				
 				<table class="tables">
 					<thead>
 						<tr>
@@ -37,18 +37,20 @@
 							<th>Tarot</th>
 							<th>Deux tables</th>
 							<th>Prêt</th>
-							<th>Equipe</th>
+							<th ng-if="!table.panama">Equipe</th>
+							<th ng-if="table.inThatTable">Finir table</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr ng-repeat="user in table.users" ng-class="user.ready ? 'user_ready' : 'user_not_ready'">
-							<td ng-class="{'username_cell': user.name === ctrl.username}">
-								{{user.name}}<span ng-if="user.name === ctrl.username"> (you)</span>
+							<td ng-class="{'username_cell': user.pseudo == ctrl.user.pseudo}">
+								{{user.pseudo}}<span ng-if="user.pseudo == ctrl.user.pseudo"> (you)</span>
 							</td>
 							<td>{{user.canPlayTarot ? '✅' : '❌'}}</td>
 							<td>{{user.canPlayTwoTables ? '✅' : '❌'}}</td>
 							<td>{{user.ready ? '✅' : '❌'}}</td>
-							<td><span ng-repeat="team in user.teams" ng-style="{ color: team }" style="margin-right: 3px">{{team}}</span></td>
+							<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
+							<td><button ng-click="ctrl.finish(table.id,user.team)" ng-if="!table.panama && table.inThatTable && user.pseudo === ctrl.user.pseudo">On a gagné!</button></td>
 						</tr>
 					</tbody>
 				</table>
@@ -56,14 +58,14 @@
 			</div>
 		</div>
 
-		<div id="messages">{{ctrl.message}}</div>
-
-		<div class="links-container">
-			<a href="/help">Aide</a>
-			<a href="/valeurs.webp" target="_blank">Valeur des cartes</a>
-			<a href="/backend">Backend</a>
-			<a href="https://github.com/AdrienPensart/belote" target="_blank">Code source</a>
-			<a href="https://github.com/AdrienPensart/belote/issues" target="_blank">Bug Tracker</a>
-		</div>
-	</body>
+	<div class="links-container">
+		<a href="/stats">Stats</a>
+		<a href="/account">Mon Compte</a>
+		<a href="/help" target="_blank">Aide</a>
+		<a href="/valeurs.webp" target="_blank">Valeur des cartes</a>
+		<a href="/backend" target="_blank" ng-if="ctrl.user.admin">Backend</a>
+		<a href="https://github.com/AdrienPensart/belote" target="_blank">Code source</a>
+		<a href="https://github.com/AdrienPensart/belote/issues" target="_blank">Bug Tracker</a>
+	</div>
+</body>
 </html>

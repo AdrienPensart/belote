@@ -193,6 +193,30 @@ form::before {
 	z-index: -1;
 }
 
+.form {
+	max-width: 520px;
+	margin: 0 auto 32px;
+	padding: 32px;
+	background: var(--card-surface);
+	border: 2px solid var(--border-accent);
+	border-radius: var(--border-radius);
+	box-shadow: var(--shadow-lg);
+	position: relative;
+}
+
+.form::before {
+	content: '';
+	position: absolute;
+	top: -2px;
+	left: -2px;
+	right: -2px;
+	bottom: -2px;
+	background: linear-gradient(135deg, var(--gold), transparent, var(--gold));
+	border-radius: var(--border-radius);
+	opacity: 0.1;
+	z-index: -1;
+}
+
 label {
 	display: block;
 	margin-bottom: 10px;
@@ -224,6 +248,33 @@ input[type="text"]:focus {
 }
 
 input[type="text"]:disabled {
+	background-color: var(--surface-dark);
+	cursor: not-allowed;
+	color: var(--text-muted);
+	opacity: 0.5;
+}
+
+input[type="password"] {
+	width: 100%;
+	padding: 14px 18px;
+	margin-bottom: 20px;
+	background: var(--surface-dark);
+	border: 2px solid var(--border-color);
+	border-radius: var(--border-radius-sm);
+	font-size: 16px;
+	color: var(--text-primary);
+	transition: all 0.3s ease;
+	font-family: var(--font-family);
+}
+
+input[type="password"]:focus {
+	outline: none;
+	border-color: var(--gold);
+	box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15), var(--shadow-gold);
+	background: var(--surface-lighter);
+}
+
+input[type="password"]:disabled {
 	background-color: var(--surface-dark);
 	cursor: not-allowed;
 	color: var(--text-muted);
@@ -481,4 +532,11 @@ a:hover {
 	#tables {
 		padding: 0 12px;
 	}
+}
+
+.error {
+	color: red;
+	font-size: 16px;
+	margin-top: 10px;
+	margin-bottom: 10px;
 }

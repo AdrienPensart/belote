@@ -1,147 +1,166 @@
 angular.module('meltdownApp', [])
-  .controller('MainController', ['$http', '$timeout', function ($http, $timeout) {
+  .factory('myHttpInterceptor', function ($q) {
+        return {
+            'request': function(config) {
+              config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
+              return config;
+            },
+            // Optional method to handle successful responses
+            response: function (response) {
+                // Do something with the successful response
+                // For example, modify data, add properties, or log
+                return response; // Always return the response or a promise resolving to it
+            },
+
+            // Optional method to handle error responses
+            responseError: function (rejection) {
+                // Do something with the error response
+                // For example, display error messages, redirect to login, or retry
+                console.error('Error response intercepted:', rejection);
+                if (rejection.status === 401) {
+                  localStorage.removeItem('token');
+                  window.location.href='/login';
+                }
+                
+                return $q.reject(rejection); // Always return a rejected promise
+            }
+        };
+  })
+  .config(function ($httpProvider) {
+      $httpProvider.interceptors.push('myHttpInterceptor');
+  })
+  .controller('MainController', ['$http', '$timeout','$scope', function ($http, $timeout, $scope) {
     const vm = this;
     vm.username = (localStorage.getItem('username') || '').trim();
+    vm.authToken = (localStorage.getItem('token') || '').trim();
+    if (!vm.authToken) {
+      window.location.href='/login';
+    }
     if (vm.username) {
       vm.usernameInput = vm.username;
     }
-    vm.joinDisabled = !!vm.username;
-    vm.connected = !!vm.username;
     vm.tables = [];
-    vm.message = 'disconnected';
-
-    vm.join = function () {
-      $http({
-        method: 'GET',
-        url: '/me/join?username=' + encodeURIComponent(vm.usernameInput),
-        headers: {
-          'Accept': 'text/plain',
-          'Content-Type': 'text/plain'
-        },
-        responseType: 'text'
-      }).then(response => {
-        localStorage.setItem('username', vm.usernameInput.trim());
-        vm.username = vm.usernameInput.trim();
-        vm.joinDisabled = true;
-        vm.connected = true;
-        vm.connectWebsocket();
-        vm.refreshTables();
-      });
-    };
+    vm.timer = -1;
 
     vm.quit = function () {
-      $http.get('/me/quit?username=' + encodeURIComponent(vm.username)).then(() => {
-        localStorage.removeItem('username');
-        vm.username = '';
-        vm.connected = false;
-        vm.joinDisabled = false;
+      $http.get('/user/quit').then(() => {
+        vm.websocket.close();
+        setTimeout(() => {
+          localStorage.removeItem('username');
+          localStorage.removeItem('token');
+          window.location.href='/';
+        }, 500);
+      });
+    };
+
+    vm.finish = function (tableId,teamName) {
+      if (window.confirm(`La team ${teamName} a gagné vous etes sur?`)) {
+        $http.get(`/user/finish?tableId=${tableId}&winningTeam=${teamName}`).then((response) => {
+          vm.refreshTables();
+        });
+      }
+    };
+
+    vm.ready = function (ready) {
+      this.changeUserState({ready});
+    };
+    vm.canPlayTarot = function (canPlayTarot) {
+      this.changeUserState({canPlayTarot});
+    };
+    vm.canPlayTwoTables = function (canPlayTwoTables) {
+      this.changeUserState({canPlayTwoTables});
+    };
+    vm.changeUserState= function(body) {
+      $http.post('/user/changeUserState',body).then(() => {
         vm.refreshTables();
       });
-    };
-
-    vm.finish = function () {
-      $http.get('/me/finish?username=' + encodeURIComponent(vm.username)).then((response) => {
-        if (response.status === 404) {
-          vm.quit();
-        } else {
-          vm.refreshTables();
-        }
-      });
-    };
-
-    vm.ready = function () {
-      $http.get('/me/ready?username=' + encodeURIComponent(vm.username)).then((response) => {
-        if (response.status === 404) {
-          vm.quit();
-        } else {
-          vm.refreshTables();
-        }
-      });
-    };
-
-    vm.notready = function () {
-      $http.get('/me/notready?username=' + encodeURIComponent(vm.username)).then((response) => {
-        if (response.status === 404) {
-          vm.quit();
-        } else {
-          vm.refreshTables();
-        }
-      });
-    };
-
-    vm.toggleCanPlayTarot = function () {
-      $http.get('/me/toggleCanPlayTarot?username=' + encodeURIComponent(vm.username)).then((response) => {
-        if (response.status === 404) {
-          vm.quit();
-        } else {
-          vm.refreshTables();
-        }
-      });
-    };
-
-    vm.toggleCanPlayTwoTables = function () {
-      $http.get('/me/toggleCanPlayTwoTables?username=' + encodeURIComponent(vm.username)).then((response) => {
-        if (response.status === 404) {
-          vm.quit();
-        } else {
-          vm.refreshTables();
-        }
-      });
-    };
+    }
 
     vm.refreshTables = function () {
-      $http.get('/public/tables').then((resp) => {
+      vm.onTable = false;
+      return $http.get('/tables').then((resp) => {
         const tablesData = resp.data;
-        vm.tables = Object.entries(tablesData).map(([name, users]) => {
-          const usersList = Object.values(users).map(user => ({
-            name: user.name,
-            ready: user.ready,
-            canPlayTarot: user.canPlayTarot,
-            canPlayTwoTables: user.canPlayTwoTables,
-            teams: user.teams
-          }));
-          const readyCount = usersList.filter(u => u.ready).length;
-          return { name, users: usersList, readyCount };
+        vm.tables = tablesData.map((fullTable) => {
+          let users = [];
+          for (var team of fullTable.teams) {
+            users = [...users, ...team.users.map((user) => {
+              return {
+                ...user,
+                team: team.name
+              };
+            })];
+          }
+          let onThatTable = users.find((elem) => elem.pseudo === vm.user.pseudo) !== undefined;
+          if (!fullTable.table.panama && onThatTable) {
+            vm.onTable = true;
+          }
+          const readyCount = users.filter(u => u.ready).length;
+          return {name:fullTable.table.name,id: fullTable.table.id,panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams:fullTable.teams};
         });
-
-        const found = vm.tables.some(table =>
-          table.users.some(user => user.name === vm.username)
-        );
-
-        if (!found) {
-          vm.connected = false;
-          vm.joinDisabled = false;
-          localStorage.removeItem('username');
-        }
       });
     };
+
+    vm.refreshTimer = function () {
+      if (vm.refreshTimerWebService) {
+        clearInterval(vm.refreshTimerWebService);
+      }
+      vm.refreshTimerWebService = setInterval(vm.refreshTimer, 5000);
+				$http.get('/alarm').then((response) => {
+					vm.timer = response.data.secondsLeft;
+          if (vm.intervalRefreshTimer) {
+						clearInterval(vm.intervalRefreshTimer);
+					}
+          if (vm.timer > 0) {
+            vm.intervalRefreshTimer = setInterval(() => {
+              vm.timer = vm.timer-1;
+              if (vm.timer <=0) {
+                clearInterval(vm.intervalRefreshTimer);
+              }
+              $scope.$applyAsync();
+            }, 1000);
+          } else {
+						vm.refreshTables();
+					}
+          $scope.$applyAsync();
+				});
+		}
 
     vm.connectWebsocket = function () {
       const scheme = location.protocol === 'http:' ? 'ws://' : 'wss://';
-      const ws = new WebSocket(scheme + location.host + '/me/meltdown?username=' + encodeURIComponent(vm.username));
-
-      ws.onopen = () => {
-        vm.message = 'Connected to Meltdown, tables updated';
-        // vm.refreshTables();
-      };
+      const ws = new WebSocket(scheme + location.host + '/socket?auth_token=' + encodeURIComponent(vm.authToken));
+      vm.websocket = ws;
 
       ws.onmessage = (event) => {
-        vm.message = `Update tables because : ${event.data}`;
         vm.refreshTables();
       };
 
       ws.onerror = () => ws.close();
 
       ws.onclose = () => {
-        vm.message = 'Disconnected from Meltdown!';
-        vm.tables = [];
         $timeout(vm.connectWebsocket, 1000);
       };
     };
 
-    if (vm.username) {
-      vm.connectWebsocket();
+    vm.getTimerRendering = function (timer) {
+      // Calculate minutes
+      const minutes = Math.floor(timer / 60);
+
+      // Calculate remaining seconds
+      const seconds = timer % 60;
+
+      // Format minutes and seconds with leading zeros if necessary
+      const formattedMinutes = String(minutes).padStart(2, '0');
+      const formattedSeconds = String(seconds).padStart(2, '0');
+
+      return `${formattedMinutes}:${formattedSeconds}`;
     }
 
-    vm.refreshTables();
-  }]);
+    $http.get('/me').then((response) => {
+      vm.user = response.data;
+      vm.refreshTimer();
+      vm.refreshTables().then(() => {
+          vm.connectWebsocket();
+      });
+    });
+  }
+]);

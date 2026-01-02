@@ -10,62 +10,59 @@
 	</head>
 
 	<body ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm">
-		<form id="join">
-			<label for="username">Adepte:</label>
-			<input type="text" name="username" placeholder="Ton ostie de pseudo" id="username" required ng-model="vm.username" />
-			<button id="join_button" type="submit" ng-click="vm.join()">Join</button>
-		</form>
 		<div class="button_container_admin">
-			<button class="secondary_background" id="load_fixtures" type="button" ng-click="vm.loadFixtures()">Load users</button>
-			<button class="secondary_background" id="clear_tables" type="button" ng-click="vm.clearTables()">Clear tables</button>
-			<button class="secondary_background" id="generate_tables" type="button" ng-click="vm.generateTables()">Distribute Tables</button>
-			<button class="secondary_background" id="reshuffle_tables" type="button" ng-click="vm.reshuffleTables()">Reshuffle Tables</button>
-			<button class="secondary_background" id="notify_all" type="button" ng-click="vm.notifyAll()">Notify all</button>
+			<h1 ng-show="vm.timer>0" style="margin: 40px auto">Tirage automatique des tables dans {{vm.getTimerRendering(vm.timer)}}</h1>
 		</div>
-		<div id="tables" ng-repeat="(tableName, users) in vm.tables">
+		<div class="button_container_admin">
+			<button class="secondary_background" type="button" ng-click="vm.clearTables()">Vider tables</button>
+			<button class="secondary_background" type="button" ng-click="vm.generateTables()">Distribuer Tables</button>
+			<button class="secondary_background" type="button" ng-click="vm.reshuffleTables()">Re-Mélanger Tables</button>
+			<button class="secondary_background" type="button" ng-click="vm.notifyAll()">Notifier tout le monde</button>
+
+		</div>
+		<div class="button_container_admin">
+			<button class="secondary_background" type="button" ng-click="vm.launchTimer(5)">Lancer timer 5 min</button>
+			<button class="secondary_background" type="button" ng-click="vm.launchTimer(10)">Lancer timer 10 min</button>
+			<button class="secondary_background" type="button" ng-click="vm.launchTimer(15)">Lancer timer 15 min</button>
+			<button class="secondary_background" type="button" ng-click="vm.removeTimer()">Supprimer timer</button>
+		</div>
+		<div id="tables" ng-repeat="table in vm.tables">
 			<div class="table_ready_status">
-				<span>{{tableName}} ({{vm.readyCount(users)}} / {{users.length}} players)</span>
-				<button ng-click="vm.tableReady(tableName)">Ready</button>
-				<button ng-click="vm.tableNotReady(tableName)">Not Ready</button>
-				<button ng-click="vm.tableDelete(tableName)">Delete</button>
+				<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
+				<button ng-click="vm.changeReadyState(table.id, true)">Prêt</button>
+				<button ng-click="vm.changeReadyState(table.id, false)">Pas prêt</button>
+				<button ng-click="vm.tableDelete(table.id)" ng-if="!table.panama">Supprimer table</button>
 			</div>
 			<table class="tables">
 				<thead>
 					<tr>
-						<th>Username</th>
-						<th>IP</th>
-						<th>Last Activity</th>
-						<th>Team</th>
+						<th>Joueur</th>
+						<th ng-if="!table.panama">Equipe</th>
 						<th>Tarot</th>
-						<th>Two tables</th>
-						<th>Ready</th>
-						<th ng-if="tableName != 'panama'">Fini</th>
-						<th>Supprimer</th>
+						<th>Deux tables</th>
+						<th>Prêt</th>
+						<th ng-if="!table.panama">Fini</th>
+						<th ng-if="table.panama">Supprimer</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr ng-repeat="user in users">
-						<td ng-style="{'color': user.ready ? '#006400' : '#FF8C00'}">{{user.name}}</td>
-						<td>{{user.ip ? 'connected' : 'added by admin'}}</td>
-						<td>{{user.lastActiveAt | date:'short'}}</td>
-						<td><span ng-repeat="team in user.teams" ng-style="{ color: team }" style="margin-right: 3px">{{team}}</span></td>
-						<td ng-if="!user.canPlayTarot" ng-click="vm.toggleCanPlayTarot(user.name)" style="cursor: pointer">❌</td>
-						<td ng-if="user.canPlayTarot" ng-click="vm.toggleCanPlayTarot(user.name)" style="cursor: pointer">✅</td>
-						<td ng-if="!user.canPlayTwoTables" ng-click="vm.toggleCanPlayTwoTables(user.name)" style="cursor: pointer">❌</td>
-						<td ng-if="user.canPlayTwoTables" ng-click="vm.toggleCanPlayTwoTables(user.name)" style="cursor: pointer">✅</td>
-						<td ng-if="!user.ready" ng-click="vm.userReady(user.name)" style="cursor: pointer">❌</td>
-						<td ng-if="user.ready" ng-click="vm.userNotReady(user.name)" style="cursor: pointer">✅</td>
-						<td ng-if="tableName != 'panama'" ng-click="vm.userFinish(user.name)" style="cursor: pointer">🏁</td>
-						<td ng-click="vm.userDelete(user.name)" style="cursor: pointer">🚮</td>
+					<tr ng-repeat="user in table.users">
+						<td ng-style="{'color': user.ready ? '#006400' : '#FF8C00'}">{{user.pseudo}}</td>
+						<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
+						<td ng-if="!user.canPlayTarot" ng-click="vm.canPlayTarot(user.pseudo, true)" style="cursor: pointer">❌</td>
+						<td ng-if="user.canPlayTarot" ng-click="vm.canPlayTarot(user.pseudo, false)" style="cursor: pointer">✅</td>
+						<td ng-if="!user.canPlayTwoTables" ng-click="vm.canPlayTwoTables(user.pseudo, true)" style="cursor: pointer">❌</td>
+						<td ng-if="user.canPlayTwoTables" ng-click="vm.canPlayTwoTables(user.pseudo, false)" style="cursor: pointer">✅</td>
+						<td ng-if="!user.ready" ng-click="vm.ready(user.pseudo, true)" style="cursor: pointer">❌</td>
+						<td ng-if="user.ready" ng-click="vm.ready(user.pseudo, false)" style="cursor: pointer">✅</td>
+						<td ng-if="!table.panama" ng-click="vm.tableFinished(table.id,user.team)" style="cursor: pointer">🏁</td>
+						<td ng-if="table.panama" ng-click="vm.userDelete(user.pseudo)" style="cursor: pointer">🚮</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
-		<div id="messages">{{vm.messages}}</div>
-		<div class="links-container">
-			<a href="/" target="_blank">Frontend</a>
-			<a href="/public/tables" target="_blank">Dump tables</a>
-			<a href="/admin/users" target="_blank">Dump users</a>
-		</div>
+		<a href="/" target="_blank">Frontend</a>
+		<a href="/userList" target="_blank">Liste utilisateurs</a>
+		<br />
 	</body>
 </html>
