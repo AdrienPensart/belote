@@ -1,7 +1,7 @@
-import { User, UserForFront } from '../db/schema.types';
+import { User } from '../db/schema.types';
 import { eq } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
-import { users } from "../db/schema"; // your schema file
+import { lower, users } from "../db/schema"; // your schema file
 import { v4 as uuidv4 } from 'uuid';
 import { compare,hash } from "bcrypt-ts";
 const saltRounds = 10;
@@ -18,8 +18,7 @@ export class UserService {
         const userResult = await this.db
             .select()
             .from(users)
-            .where(eq(users.pseudo, pseudo));
-
+            .where(eq(lower(users.pseudo), pseudo.toLowerCase()));
         if (userResult[0]) {
             return new Response('existing user', {
                 status: 401,
@@ -57,7 +56,7 @@ export class UserService {
         const userResult = await this.db
             .select()
             .from(users)
-            .where(eq(users.pseudo, pseudo)).get();
+            .where(eq(users.pseudo, pseudo.toLowerCase())).get();
         if (!userResult) {
             return new Response('User not found', {
                 status: 404,
@@ -83,8 +82,7 @@ export class UserService {
         const userResult = await this.db
             .select()
             .from(users)
-            .where(eq(users.pseudo, pseudo)).get();
-
+            .where(eq(lower(users.pseudo), pseudo.toLowerCase())).get();
         if (!userResult || !await compare(password,userResult.password!!)) {
             return undefined;
         }
@@ -149,7 +147,7 @@ export class UserService {
         const user = await this.db
             .select()
             .from(users)
-            .where(eq(users.pseudo, pseudo)).get();
+            .where(eq(lower(users.pseudo), pseudo.toLowerCase())).get();
             if (user) {
                 await this.db.update(users)
                 .set({ ready: body.ready ?? user.ready, canPlayTarot: body.canPlayTarot ?? user.canPlayTarot, canPlayTwoTables: body.canPlayTwoTables?? user.canPlayTwoTables })
@@ -162,7 +160,7 @@ export class UserService {
         const user = await this.db
             .select()
             .from(users)
-            .where(eq(users.pseudo, pseudo)).get();
+            .where(eq(lower(users.pseudo), pseudo.toLowerCase())).get();
         if (user) {
             const tokenValidity = new Date();
             tokenValidity.setDate(tokenValidity.getDate() - 1);
