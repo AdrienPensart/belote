@@ -26,6 +26,10 @@
 			<button class="secondary_background" type="button" ng-click="vm.launchTimer(15)">Lancer timer 15 min</button>
 			<button class="secondary_background" type="button" ng-click="vm.removeTimer()">Supprimer timer</button>
 		</div>
+		<div class="button_container_admin">
+			<button class="secondary_background" ng-click="vm.createTable('Belote')">Creer Table Belote</button>
+			<button class="secondary_background" ng-click="vm.createTable('Coinche')">Creer Table Coinche</button>
+		</div>
 		<div id="tables" ng-repeat="table in vm.tables">
 			<div class="table_ready_status">
 				<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
@@ -36,6 +40,7 @@
 			<table class="tables">
 				<thead>
 					<tr>
+						<th ng-if="table.panama" style="width:30px"></th>
 						<th>Joueur</th>
 						<th ng-if="!table.panama">Equipe</th>
 						<th>Tarot</th>
@@ -47,6 +52,7 @@
 				</thead>
 				<tbody>
 					<tr ng-repeat="user in table.users">
+						<td ng-if="table.panama" style="width:30px"><input ng-click="vm.toggleUser(user.pseudo, $event.target.checked)" type="checkbox" ng-checked="vm.pseudosSelected.indexOf(user.pseudo)!== -1"/></td>
 						<td ng-style="{'color': user.ready ? '#006400' : '#FF8C00'}">{{user.pseudo}}</td>
 						<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
 						<td ng-if="!user.canPlayTarot" ng-click="vm.canPlayTarot(user.pseudo, true)" style="cursor: pointer">❌</td>

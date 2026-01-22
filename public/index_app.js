@@ -39,6 +39,7 @@ angular.module('meltdownApp', [])
     if (vm.username) {
       vm.usernameInput = vm.username;
     }
+    vm.pseudosSelected = [];
     vm.tables = [];
     vm.timer = -1;
 
@@ -97,8 +98,26 @@ angular.module('meltdownApp', [])
           const readyCount = users.filter(u => u.ready).length;
           return {name:fullTable.table.name,id: fullTable.table.id,panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams:fullTable.teams};
         });
+        vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables[0].users.findIndex((user) => user.pseudo === elem) !== -1);
       });
     };
+
+    vm.toggleUser = function (userName, checked) {
+      if (checked) {
+        if (!vm.pseudosSelected.includes(userName)) {
+          vm.pseudosSelected.push(userName);
+        }
+      } else {
+        vm.pseudosSelected =
+          vm.pseudosSelected.filter(u => u !== userName);
+      }
+    }
+
+    vm.createTable = function (gameModeName) {
+      $http.post('/tables/manual',{gameModeName,pseudos: vm.pseudosSelected}).then(() => {
+        vm.refreshTables();
+      });
+    }
 
     vm.refreshTimer = function () {
       if (vm.refreshTimerWebService) {
