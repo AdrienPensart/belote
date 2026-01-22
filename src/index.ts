@@ -11,7 +11,6 @@ const success = {
 		'Cache-Control': 'no-store',
 	},
 };
-const IP_HEADER = 'CF-Connecting-IP';
 export { MyDurableObject };
 
 export default {
@@ -21,12 +20,12 @@ export default {
 		if (!stub) {
 			return new Response(JSON.stringify({ message: 'Durable Object not found' }), { status: 500 });
 		}
-		if (url.pathname==='/auth') {
+		if (url.pathname === '/auth') {
 			let response = await stub.authenticate(request);
 			await stub.notifyAll(`user connected!`);
 			return response;
 		}
-		if (url.pathname==='/createAccount') {
+		if (url.pathname === '/createAccount') {
 			let response = stub.createAccount(request);
 			await stub.notifyAll(`user connected!`);
 			return response;
@@ -34,28 +33,27 @@ export default {
 		if (url.pathname.indexOf('favicon') !== -1) {
 			return new Response(JSON.stringify({ message: `url ${url} not found` }), { status: 404 });
 		}
-		let adminAuth = url.pathname.indexOf("/admin/") !== -1;
+		let adminAuth = url.pathname.indexOf('/admin/') !== -1;
 		const authorization = request.headers.get('Authorization') ?? new URL(request.url).searchParams.get('auth_token')?.trim();
-		let userOrResponse = await stub.validateToken(authorization,adminAuth);
+		let userOrResponse = await stub.validateToken(authorization, adminAuth);
 		if (userOrResponse instanceof Response) {
 			return userOrResponse;
 		}
-		let user : User = userOrResponse;
+		let user: User = userOrResponse;
 		switch (url.pathname) {
 			case '/socket': {
-				try{
+				try {
 					let response = await stub.fetch(request);
 					return response;
-				} catch(e) {
+				} catch (e) {
 					console.log(e);
 				}
-				
 			}
 			case '/me': {
 				return new Response(JSON.stringify(user));
 			}
 			case '/passwordChange': {
-				return await stub.passwordChange(request, user.pseudo,false);
+				return await stub.passwordChange(request, user.pseudo, false);
 			}
 			case '/user/stats': {
 				return new Response(JSON.stringify(await stub.getStats(user)));
@@ -65,7 +63,7 @@ export default {
 				return new Response(JSON.stringify(tables), success);
 			}
 			case '/user/changeUserState': {
-				await stub.changeUserState(request,user.pseudo)
+				await stub.changeUserState(request, user.pseudo);
 				await stub.notifyAll(`user ${user.pseudo} toggleUserState!`);
 				return new Response(JSON.stringify({ message: `🎉 User changed state !` }), success);
 			}
@@ -89,7 +87,7 @@ export default {
 				return new Response(JSON.stringify(await stub.getGameModes()), { status: 200 });
 			}
 			case '/tables/manual': {
-				const body: {pseudos: string[], gameModeName: string} = await request.json();
+				const body: { pseudos: string[]; gameModeName: string } = await request.json();
 				const gameModes = await stub.getGameModes();
 				const gameMode = gameModes.filter((elem) => elem.name === body.gameModeName)[0];
 				if (gameMode === undefined) {
@@ -103,12 +101,12 @@ export default {
 					return new Response(JSON.stringify({ message: 'table cant be created' }), { status: 400 });
 				}
 
-				await stub.createManualTable(body.pseudos,gameMode!!);
+				await stub.createManualTable(body.pseudos, gameMode!!);
 				await stub.notifyAll(`tables generated`);
 				return new Response('ok', { status: 200 });
 			}
-			case '/alarm' :{
-				return new Response(JSON.stringify({secondsLeft : await stub.timeLeftUntilAlarm()}), { status: 200 });
+			case '/alarm': {
+				return new Response(JSON.stringify({ secondsLeft: await stub.timeLeftUntilAlarm() }), { status: 200 });
 			}
 			case '/admin/alarm/add': {
 				await stub.addTimer(request);
@@ -172,12 +170,12 @@ export default {
 				return new Response(JSON.stringify({ message: `🎉 Table deleted` }), success);
 			}
 			case '/admin/tables/clear': {
-				await stub.adminDeleteAllTables()
+				await stub.adminDeleteAllTables();
 				await stub.notifyAll(`tables cleared`);
 				return new Response(JSON.stringify({ message: `🎉 Tables cleared` }), success);
 			}
 			case '/admin/tables/generate': {
-				await stub.adminGenerateTables()
+				await stub.adminGenerateTables();
 				await stub.notifyAll(`tables generated`);
 				return new Response(JSON.stringify({ message: `🎉 New tables generated` }), success);
 			}
@@ -193,5 +191,5 @@ export default {
 			default:
 				return new Response(JSON.stringify({ message: `url ${url} not found` }), { status: 404 });
 		}
-	}
+	},
 } satisfies ExportedHandler<Env>;

@@ -1,9 +1,9 @@
 angular.module('meltdownAdmin', [])
   .factory('myHttpInterceptor', function ($q) {
     return {
-      'request': function(config) {
-      config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
-      return config;
+      'request': function (config) {
+        config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
+        return config;
       },
       // Optional method to handle successful responses
       response: function (response) {
@@ -18,10 +18,10 @@ angular.module('meltdownAdmin', [])
         // For example, display error messages, redirect to login, or retry
         if (rejection.status === 401) {
           localStorage.removeItem('token');
-          window.location.href='/login';
+          window.location.href = '/login';
         }
         if (rejection.status === 403) {
-          window.location.href='/';
+          window.location.href = '/';
         }
         console.error('Error response intercepted:', rejection);
         return $q.reject(rejection); // Always return a rejected promise
@@ -40,7 +40,7 @@ angular.module('meltdownAdmin', [])
     vm.authToken = (localStorage.getItem('token') || '').trim();
     vm.timer = -1;
     if (!vm.authToken) {
-      window.location.href='/login';
+      window.location.href = '/login';
     }
 
     vm.refreshTables = function () {
@@ -50,14 +50,17 @@ angular.module('meltdownAdmin', [])
           let users = [];
           for (var team of fullTable.teams) {
             users = [...users, ...team.users.map((user) => {
-            return {
-              ...user,
-              team: team.name
-            };
+              return {
+                ...user,
+                team: team.name
+              };
             })];
           }
           const readyCount = users.filter(u => u.ready).length;
-          return {name:fullTable.table.name,id: fullTable.table.id,panama: fullTable.table.panama, users: users, readyCount, teams:fullTable.teams };
+          if (fullTable.table.panama) {
+            users.sort((a, b) => a.pseudo.localeCompare(b.pseudo));
+          }
+          return { name: fullTable.table.name, id: fullTable.table.id, panama: fullTable.table.panama, users: users, readyCount, teams: fullTable.teams };
         });
         vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables[0].users.findIndex((user) => user.pseudo === elem) !== -1);
       });
@@ -69,7 +72,7 @@ angular.module('meltdownAdmin', [])
     };
 
     vm.createTable = function (gameModeName) {
-      $http.post('/tables/manual',{gameModeName,pseudos: vm.pseudosSelected}).then(() => {
+      $http.post('/tables/manual', { gameModeName, pseudos: vm.pseudosSelected }).then(() => {
         vm.refreshTables();
       });
     }
@@ -89,16 +92,16 @@ angular.module('meltdownAdmin', [])
     };
 
     vm.ready = function (pseudo, ready) {
-      vm.changeUserState(pseudo,{ready});
+      vm.changeUserState(pseudo, { ready });
     };
-    vm.canPlayTarot = function (pseudo,canPlayTarot) {
-      vm.changeUserState(pseudo,{canPlayTarot});
+    vm.canPlayTarot = function (pseudo, canPlayTarot) {
+      vm.changeUserState(pseudo, { canPlayTarot });
     };
-    vm.canPlayTwoTables = function (pseudo,canPlayTwoTables) {
-      vm.changeUserState(pseudo,{canPlayTwoTables});
+    vm.canPlayTwoTables = function (pseudo, canPlayTwoTables) {
+      vm.changeUserState(pseudo, { canPlayTwoTables });
     };
-    vm.changeUserState= function(pseudo, body) {
-      $http.post('/admin/users/toggleUserState?pseudo=' + pseudo,body).then(() => {
+    vm.changeUserState = function (pseudo, body) {
+      $http.post('/admin/users/toggleUserState?pseudo=' + pseudo, body).then(() => {
         vm.refreshTables();
       });
     }
@@ -110,16 +113,16 @@ angular.module('meltdownAdmin', [])
         })
     };
 
-    vm.tableFinished = function (tableId,teamName) {
+    vm.tableFinished = function (tableId, teamName) {
       if (window.confirm(`La team ${teamName} a gagné vous etes sur?`)) {
-         $http.get(`/admin/users/finish?tableId=${tableId}&winningTeam=${teamName}`).then((response) => {
+        $http.get(`/admin/users/finish?tableId=${tableId}&winningTeam=${teamName}`).then((response) => {
           vm.refreshTables();
         });
       }
     };
 
     vm.changeReadyState = function (tableId, ready) {
-      $http.post('/admin/tables/changeReadyState', {ready, tableId})
+      $http.post('/admin/tables/changeReadyState', { ready, tableId })
         .then(function () {
           vm.refreshTables();
         })
@@ -163,8 +166,8 @@ angular.module('meltdownAdmin', [])
         }
         if (vm.timer > 0) {
           vm.intervalRefreshTimer = setInterval(() => {
-            vm.timer = vm.timer-1;
-            if (vm.timer <=0) {
+            vm.timer = vm.timer - 1;
+            if (vm.timer <= 0) {
               clearInterval(vm.intervalRefreshTimer);
             }
             $scope.$applyAsync();
@@ -177,7 +180,7 @@ angular.module('meltdownAdmin', [])
     }
 
     vm.launchTimer = function (minutes) {
-      $http.post('/admin/alarm/add',{
+      $http.post('/admin/alarm/add', {
         minutes
       });
     }
@@ -234,4 +237,4 @@ angular.module('meltdownAdmin', [])
       connect();
     };
   }
-]);
+  ]);
