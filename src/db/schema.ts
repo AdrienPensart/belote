@@ -1,8 +1,10 @@
+import { sql, SQL } from "drizzle-orm";
 import {
   sqliteTable,
   text,
   integer,
-  primaryKey
+  primaryKey,
+  AnySQLiteColumn
 } from "drizzle-orm/sqlite-core";
 
 // ======================================================================
@@ -82,3 +84,8 @@ export const tablesUsers = sqliteTable(
     pk: primaryKey({ columns: [t.tableId, t.userId] })
   })
 );
+
+
+export function lower(email: AnySQLiteColumn): SQL {
+  return sql`lower(${email})`;
+}
