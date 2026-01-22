@@ -21,6 +21,8 @@
 			<button class="secondary_background" ng-click="ctrl.canPlayTarot(false)">Pas de tarot! (si 5)</button>
 			<button class="secondary_background" ng-click="ctrl.canPlayTwoTables(true)">Deux tables! j'suis capable</button>
 			<button class="secondary_background" ng-click="ctrl.canPlayTwoTables(false)">Deux tables! j'suis pas capable</button>
+			<button class="secondary_background" ng-click="ctrl.createTable('Belote')">Creer Table Belote</button>
+			<button class="secondary_background" ng-click="ctrl.createTable('Coinche')">Creer Table Coinche</button>
 		</div>
 
 		<br />
@@ -33,6 +35,7 @@
 				<table class="tables">
 					<thead>
 						<tr>
+							<th ng-if="table.panama" style="width:30px"></th>
 							<th>Joueur</th>
 							<th>Tarot</th>
 							<th>Deux tables</th>
@@ -43,6 +46,7 @@
 					</thead>
 					<tbody>
 						<tr ng-repeat="user in table.users" ng-class="user.ready ? 'user_ready' : 'user_not_ready'">
+							<td style="width:30px" ng-if="table.panama"><input ng-click="ctrl.toggleUser(user.pseudo, $event.target.checked)" type="checkbox" ng-checked="ctrl.pseudosSelected.indexOf(user.pseudo)!== -1"/></td>
 							<td ng-class="{'username_cell': user.pseudo == ctrl.user.pseudo}">
 								{{user.pseudo}}<span ng-if="user.pseudo == ctrl.user.pseudo"> (you)</span>
 							</td>

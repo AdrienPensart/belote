@@ -182,7 +182,7 @@ const generateTable = function (players: User[], playerOnTwoTable: User | undefi
 			nextTableAvailable++;
 		}
 
-		let tableName = `Table ${nextTableAvailable} ${playerOnTwoTable ? '(Table de 7)' : ''}`;
+		let tableName = `Table ${nextTableAvailable} ${playerOnTwoTable ? '(Table de 7)' : ''} (${gameMode.name})`;
 		usedTableNames.push(tableName);
 
 		let fullTable: FullTable = {

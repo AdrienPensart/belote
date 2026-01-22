@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { FullTable, Stat, User } from './db/schema.types';
+import { FullTable, GameMode, Stat, User } from './db/schema.types';
 import { drizzle, type DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 import { GameService } from './services/GameService';
 import { UserService } from './services/UserService';
@@ -63,6 +63,12 @@ export class MyDurableObject extends DurableObject<Env> {
 	}
 	async changeUserState(request: Request, pseudo:string) {
 		await this.userService.changeUserState(request, pseudo);
+	}
+	async getGameModes(): Promise<GameMode[]> {
+		return await this.gameService.getGameModes();
+	}
+	async createManualTable(pseudos: string[], gameMode: GameMode) {
+		return await this.gameService.createManualTable(pseudos,gameMode);
 	}
 	async quit(pseudo: string) {
 		const userId = await this.userService.quit(pseudo);

@@ -35,6 +35,8 @@ angular.module('meltdownAdmin', [])
     const vm = this;
     vm.tables = [];
     vm.username = '';
+    vm.pseudosSelected = [];
+    vm.tables = [];
     vm.authToken = (localStorage.getItem('token') || '').trim();
     vm.timer = -1;
     if (!vm.authToken) {
@@ -57,6 +59,7 @@ angular.module('meltdownAdmin', [])
           const readyCount = users.filter(u => u.ready).length;
           return {name:fullTable.table.name,id: fullTable.table.id,panama: fullTable.table.panama, users: users, readyCount, teams:fullTable.teams };
         });
+        vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables[0].users.findIndex((user) => user.pseudo === elem) !== -1);
       });
     };
 
@@ -64,6 +67,12 @@ angular.module('meltdownAdmin', [])
       $http.get('/admin/tables/clear')
         .then(function () { vm.refreshTables(); })
     };
+
+    vm.createTable = function (gameModeName) {
+      $http.post('/tables/manual',{gameModeName,pseudos: vm.pseudosSelected}).then(() => {
+        vm.refreshTables();
+      });
+    }
 
     vm.generateTables = function () {
       $http.get('/admin/tables/generate')
@@ -122,6 +131,17 @@ angular.module('meltdownAdmin', [])
           vm.refreshTables();
         })
     };
+
+    vm.toggleUser = function (userName, checked) {
+      if (checked) {
+        if (!vm.pseudosSelected.includes(userName)) {
+          vm.pseudosSelected.push(userName);
+        }
+      } else {
+        vm.pseudosSelected =
+          vm.pseudosSelected.filter(u => u !== userName);
+      }
+    }
 
     $http.get('/me').then((response) => {
       vm.user = response.data;

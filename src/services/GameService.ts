@@ -44,6 +44,34 @@ export class GameService {
             .returning();
         }
     }
+
+    public async createManualTable(pseudos: string[], gameMode: GameMode){
+        let tables = await this.getTables();
+        const usedTableNames = tables.map((fullTable) => fullTable.table.name);
+        var nextTableAvailable = 1;
+		while (usedTableNames.filter((tableName) => tableName.startsWith(`Table ${nextTableAvailable} `)).length > 0) {
+			nextTableAvailable++;
+		}
+        let users = tables.find((tableWithUsers) => tableWithUsers.table.panama)!!.teams[0].users.filter(user => pseudos.indexOf(user.pseudo) !== -1); ;
+        let teams: Team[] = [
+            {
+                name: 'red',
+                users: [
+                    users[0],
+                    users[1]
+                ]
+            },
+            {
+                name: 'black',
+                users: [
+                    users[2],
+                    users[3]
+                ]
+            }
+        ];
+        await this.createTable(`Table ${nextTableAvailable} (${gameMode.name})`,gameMode.id, teams);
+    }
+
     public async getGameModes() : Promise<GameMode[]> {
         return await this.db
         .select()

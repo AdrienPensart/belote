@@ -85,6 +85,28 @@ export default {
 				await stub.finish(parseInt(url.searchParams.get('tableId')!!), winningTeam, user.pseudo);
 				return new Response('ok', { status: 200 });
 			}
+			case '/gameModes': {
+				return new Response(JSON.stringify(await stub.getGameModes()), { status: 200 });
+			}
+			case '/tables/manual': {
+				const body: {pseudos: string[], gameModeName: string} = await request.json();
+				const gameModes = await stub.getGameModes();
+				const gameMode = gameModes.filter((elem) => elem.name === body.gameModeName)[0];
+				if (gameMode === undefined) {
+					return new Response(JSON.stringify({ message: 'gameMode nok' }), { status: 400 });
+				}
+				if (body.pseudos.length !== 4) {
+					return new Response(JSON.stringify({ message: 'table length nok' }), { status: 400 });
+				}
+				let canCreateThisTable = body.pseudos.indexOf(user.pseudo) !== -1;
+				if (!user.admin && !canCreateThisTable) {
+					return new Response(JSON.stringify({ message: 'table cant be created' }), { status: 400 });
+				}
+
+				await stub.createManualTable(body.pseudos,gameMode!!);
+				await stub.notifyAll(`tables generated`);
+				return new Response('ok', { status: 200 });
+			}
 			case '/alarm' :{
 				return new Response(JSON.stringify({secondsLeft : await stub.timeLeftUntilAlarm()}), { status: 200 });
 			}
