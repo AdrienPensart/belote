@@ -4,9 +4,6 @@ import { users, tables, tablesUsers, gameModes } from "../db/schema"; // your sc
 import { and, eq, sql } from 'drizzle-orm';
 import { generateFullTables, TEAMS } from '../table';
 
-
-
-
 export class GameService {
     db: DrizzleSqliteDODatabase<any>;
     constructor(db: DrizzleSqliteDODatabase<any>) {
@@ -17,7 +14,7 @@ export class GameService {
         return tables.find((tableWithUsers) => tableWithUsers.table.panama)!!; 
     }
     public async addUserToTable(user:User, tableId: number) {
-        await this.addUserToTableWithTeamName(user,tableId, TEAMS[0], false);
+        await this.addUserToTableWithTeamName(user, tableId, TEAMS[0], false);
     }
     public async quit(userId: number | undefined) {
         if (userId) {
