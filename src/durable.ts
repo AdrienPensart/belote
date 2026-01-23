@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { FullTable, GameMode, Stat, User } from './db/schema.types';
+import { AlarmEvent, FullTable, GameMode, Stat, User } from './db/schema.types';
 import { drizzle, type DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
 import { GameService } from './services/GameService';
 import { UserService } from './services/UserService';
@@ -8,14 +8,13 @@ import migrations from '../drizzle/migrations';
 import * as schema from './db/schema';
 
 type Sessions = Map<WebSocket, { [key: string]: string }>;
-
+const REPEAT_ALARM_TIMER = 3600000;
 export class MyDurableObject extends DurableObject<Env> {
 	sessions: Sessions;
 	storage: DurableObjectStorage;
   	db: DrizzleSqliteDODatabase<any>;
 	gameService: GameService;
 	userService: UserService;
-	alarmTime: number | null; 
 	constructor(ctx: DurableObjectState, env: Env) {
 		super(ctx, env);
 		this.storage = ctx.storage;
@@ -23,10 +22,24 @@ export class MyDurableObject extends DurableObject<Env> {
 		this.sessions = new Map<WebSocket, { [key: string]: string }>();
 		this.gameService = new GameService(this.db);
 		this.userService = new UserService(this.db);
-		this.alarmTime = 0;
 		ctx.blockConcurrencyWhile(async () => {
 			await this._migrate();
-			this.alarmTime = await ctx.storage.getAlarm();
+			let currentAlarm = await this.storage.getAlarm();
+			if (currentAlarm != null) {
+				if (currentAlarm < Date.now()) {
+					await this.storage.deleteAlarm();
+					currentAlarm = null;
+				}
+			}
+			const events: Map<string,AlarmEvent> = await this.ctx.storage.list({ prefix: "event:" });
+			for (const [key, event] of events) {
+				if (event.runAt <= Date.now()) {
+					await this.ctx.storage.delete(event.id);
+				}
+			}
+			if (currentAlarm == null) {
+				await this.scheduleEvent('repeatTimer1Hour', Date.now()+REPEAT_ALARM_TIMER, REPEAT_ALARM_TIMER);
+			}
 		});
 	}
 	async _migrate() {
@@ -87,33 +100,70 @@ export class MyDurableObject extends DurableObject<Env> {
 	async addTimer(request: Request) {
 		const body: {minutes: number} = await request.json();
 		const triggerAt = Date.now() + body.minutes * 60 * 1000;
-		await this.ctx.storage.setAlarm(triggerAt);
-		await this.ctx.storage.put("scheduledAt", triggerAt);
-		this.alarmTime = triggerAt;
+		await this.ctx.storage.put("timerGameLaunchScheduledAt", triggerAt);
+		await this.scheduleEvent('timerGameLaunch', triggerAt);
+	}
+
+	async scheduleEvent(id: string, runAt: number, repeatMs: number | undefined = undefined) {
+		await this.ctx.storage.put(`event:${id}`, { id, runAt, repeatMs });
+		const currentAlarm = await this.ctx.storage.getAlarm();
+		if (!currentAlarm || runAt < currentAlarm) {
+			await this.ctx.storage.setAlarm(runAt);
+		}
 	}
 
 	async timeLeftUntilAlarm(): Promise<number> {
-		const scheduledAt = await this.ctx.storage.get<number>("scheduledAt");
+		const timerScheduledAt = await this.ctx.storage.get<number>("timerGameLaunchScheduledAt");
 
-		if (!scheduledAt) return -1;             // no alarm set
+		if (!timerScheduledAt) return -1;             // no alarm set
 
 		const now = Date.now();
-		const msLeft = scheduledAt - now;
+		const msLeft = timerScheduledAt - now;
 
 		const secondsLeft = Math.max(0, Math.floor(msLeft / 1000));  
   		return secondsLeft;
 	}
 
 	async removeTimer() {
-		await this.ctx.storage.deleteAlarm();
-		await this.ctx.storage.delete("scheduledAt");
+		await this.ctx.storage.delete(`event:timerGameLaunch`);
+		await this.ctx.storage.delete("timerGameLaunchScheduledAt");
 	}
 
 	async alarm() {
-		console.log("Alarm executed at", Date.now());
+		const now = Date.now();
+		const events: Map<string,AlarmEvent> = await this.ctx.storage.list({ prefix: "event:" });
+		let nextAlarm = null;
 
-		await this.adminGenerateTables();
+		for (const [key, event] of events) {
+			if (event.runAt <= now) {
+				await this.processEvent(event);
+				if (event.repeatMs) {
+					event.runAt = now + event.repeatMs;
+					await this.ctx.storage.put(key, event);
+				} else {
+					await this.ctx.storage.delete(key);
+				}
+			}
+			// Track the next event time
+			if (event.runAt > now && (!nextAlarm || event.runAt < nextAlarm)) {
+				nextAlarm = event.runAt;
+			}
+		}
+
+		if (nextAlarm) await this.ctx.storage.setAlarm(nextAlarm);
 	}
+	async processEvent(event: AlarmEvent) {
+		console.log(`Processing event ${event.id}`);
+		switch(event.id) {
+			case 'timer':
+				await this.adminGenerateTables();
+				await this.ctx.storage.delete("timerGameLaunchScheduledAt");
+				break;
+			case 'repeatTimer1Hour':
+				await this.gameService.removeDisconnectedUsers();
+				break;
+		}
+  	}
 	async getUserList(){
 		return await this.userService.getUserList();
 	}

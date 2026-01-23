@@ -42,6 +42,21 @@ export class GameService {
         }
     }
 
+    public async removeDisconnectedUsers() {
+        let tables = await this.getTables();
+        let panamaTable = tables.filter((table) => table.table.panama)[0];
+        const usersOnPanamaTable = panamaTable.teams[0].users;
+        for (const user of usersOnPanamaTable) {
+            const dbUser = await this.db
+            .select()
+            .from(users)
+            .where(eq(users.id, user.id)).get();
+            if (dbUser && dbUser.tokenValidity!= null && dbUser.tokenValidity < Date.now()) {
+                await this.quit(dbUser.id);
+            }
+        }
+    }
+
     public async createManualTable(pseudos: string[], gameMode: GameMode){
         let tables = await this.getTables();
         const usedTableNames = tables.map((fullTable) => fullTable.table.name);

@@ -37,8 +37,7 @@ export class UserService {
             ready: false,
             admin: false,
             token: newToken,
-            tokenValidity: tokenValidity.getTime(),
-            lastActiveAt: new Date().getTime()
+            tokenValidity: tokenValidity.getTime()
         })
         .returning();
     
@@ -174,7 +173,6 @@ export class UserService {
 		return await this.db
             .select({
                 pseudo: users.pseudo,
-                lastActiveAt: users.lastActiveAt,
                 tokenValidity: users.tokenValidity
             })
             .from(users).all();

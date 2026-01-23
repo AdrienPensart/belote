@@ -32,6 +32,8 @@ export type Stat = {
   value: string;
 };
 
+export type AlarmEvent = { id:string, runAt:number, repeatMs:number };
+
 // ======================================================================
 // TABLES_USERS (JOIN TABLE)
 // ======================================================================
