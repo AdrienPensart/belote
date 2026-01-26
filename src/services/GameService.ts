@@ -1,4 +1,4 @@
-import { GameMode, Table, User, FullTable, Team, Stat } from '../db/schema.types';
+import { GameMode, Table, User, FullTable, Team, Stat, GameHistory, GameHistoryPlayer } from '../db/schema.types';
 import { DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
 import { users, tables, tablesUsers, gameModes } from "../db/schema"; // your schema file
 import { and, eq, sql } from 'drizzle-orm';
@@ -271,9 +271,9 @@ export class GameService {
                         tu2.user_id AS partnerId,
                         COUNT(DISTINCT tu2.table_id) AS gamesTogether,
                         SUM(
-                            CASE 
-                            WHEN tu1.winner = 1 AND tu2.winner = 1 
-                            THEN 1 ELSE 0 
+                            CASE
+                            WHEN tu1.winner = 1 AND tu2.winner = 1
+                            THEN 1 ELSE 0
                             END
                         ) AS winsTogether
                         FROM tables_users tu1
@@ -285,7 +285,7 @@ export class GameService {
                         AND tu2.user_id != tu1.user_id and tables.finished = true and tables.gamemode_id = ${gameMode.id}
                         GROUP BY tu2.user_id
                     )
-                    SELECT 
+                    SELECT
                         p.partnerId,
                         u.pseudo AS partnerPseudo,
                         p.gamesTogether,
@@ -302,7 +302,7 @@ export class GameService {
                     });
                 }
                 const mostPlayedPartner: {partnerPseudo: string, gamesTogether: number}[] = await this.db.all(sql`
-                        SELECT 
+                        SELECT
                         users.pseudo AS partnerPseudo,
                         COUNT(*) AS gamesTogether
                         FROM tables_users tu1
@@ -326,7 +326,7 @@ export class GameService {
                 }
             }
             const gamesPlayed : {games: number}[] = await this.db.all(sql`
-                SELECT 
+                SELECT
                 COUNT(*) AS games
                 FROM tables_users tu1
                 JOIN tables tables
@@ -338,8 +338,64 @@ export class GameService {
             stats.push({
                 value: `${gameMode.name} : Tu a joué ${gamesPlayed[0].games} fois`
             });
-            
-        }    
+
+        }
         return stats;
+    }
+
+    public async getHistory(user: User, limit: number = 50): Promise<GameHistory[]> {
+        const rows: {
+            tableId: number;
+            tableName: string;
+            gameModeName: string;
+            odescriptyPseudo: string;
+            odescriptyTeam: string;
+            odescriptyWinner: number;
+            userWinner: number;
+        }[] = await this.db.all(sql`
+            SELECT
+                t.id as tableId,
+                t.name as tableName,
+                gm.name as gameModeName,
+                u.pseudo as playerPseudo,
+                tu.team as playerTeam,
+                tu.winner as playerWinner,
+                (SELECT tu2.winner FROM tables_users tu2 WHERE tu2.table_id = t.id AND tu2.user_id = ${user.id}) as userWinner
+            FROM tables t
+            JOIN gamesModes gm ON gm.id = t.gamemode_id
+            JOIN tables_users tu ON tu.table_id = t.id
+            JOIN users u ON u.id = tu.user_id
+            WHERE t.finished = true
+            AND t.panama = false
+            AND t.id IN (
+                SELECT table_id FROM tables_users WHERE user_id = ${user.id}
+            )
+            ORDER BY t.id DESC
+            LIMIT ${limit * 10}
+        `);
+
+        const historyMap = new Map<number, GameHistory>();
+
+        for (const row of rows) {
+            if (!historyMap.has(row.tableId)) {
+                historyMap.set(row.tableId, {
+                    tableId: row.tableId,
+                    tableName: row.tableName,
+                    gameMode: row.gameModeName,
+                    finishedAt: null,
+                    players: [],
+                    userWon: row.userWinner === 1
+                });
+            }
+
+            const history = historyMap.get(row.tableId)!;
+            history.players.push({
+                pseudo: (row as any).playerPseudo,
+                team: (row as any).playerTeam,
+                winner: (row as any).playerWinner === 1
+            });
+        }
+
+        return [...historyMap.values()].slice(0, limit);
     }
 }

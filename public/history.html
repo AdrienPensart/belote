@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="meltdownApp">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Historique - Meltdown Belote</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+		<script src="history.js"></script>
+	</head>
+	<body ng-controller="HistoryCtrl as ctrl">
+		<div class="form" style="max-width: 900px;">
+			<h2 style="color: var(--gold); margin-top: 0;">Historique de mes parties</h2>
+			<p style="color: var(--text-secondary);" ng-if="ctrl.history.length === 0">Aucune partie terminee pour le moment.</p>
+		</div>
+
+		<div id="tables" ng-if="ctrl.history.length > 0">
+			<div ng-repeat="game in ctrl.history">
+				<div class="table_ready_status">
+					<span ng-class="game.userWon ? 'game-won' : 'game-lost'">
+						{{game.userWon ? 'VICTOIRE' : 'DEFAITE'}}
+					</span>
+					- {{game.tableName}}
+				</div>
+				<table class="tables">
+					<thead>
+						<tr>
+							<th>Joueur</th>
+							<th>Equipe</th>
+							<th>Resultat</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="player in game.players" ng-class="player.winner ? 'user_ready' : 'user_not_ready'">
+							<td>{{player.pseudo}}</td>
+							<td><span ng-style="{ color: player.team }">{{player.team}}</span></td>
+							<td>{{player.winner ? 'Gagnant' : 'Perdant'}}</td>
+						</tr>
+					</tbody>
+				</table>
+				<hr class="table_separator" />
+			</div>
+		</div>
+
+		<div class="links-container">
+			<a href="/">Index</a>
+			<a href="/stats">Stats</a>
+		</div>
+
+		<style>
+			.game-won {
+				color: #4ade80;
+				font-weight: bold;
+			}
+			.game-lost {
+				color: var(--poker-red-light);
+				font-weight: bold;
+			}
+		</style>
+	</body>
+</html>
