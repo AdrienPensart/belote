@@ -179,6 +179,10 @@ export class MyDurableObject extends DurableObject<Env> {
 		await this.adminGenerateTables();
 	}
 
+	async swapPeople(pseudos: string[]) {
+		await this.gameService.swapPeople(pseudos);
+	}
+
 	async changeReadyState(request: Request) {
 		await this.gameService.changeReadyState(request);
 	}

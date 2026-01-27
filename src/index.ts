@@ -156,6 +156,15 @@ export default {
 				await stub.quit(pseudo);
 				return new Response('ok', { status: 200 });
 			}
+			case '/admin/tables/swap': {
+				const body: { pseudos: string[]} = await request.json();
+				if (body.pseudos.length !== 2) {
+					return new Response(JSON.stringify({ message: 'users length nok' }), { status: 400 });
+				}
+				await stub.swapPeople(body.pseudos);
+				await stub.notifyAll(`tables swap`);
+				return new Response(JSON.stringify({ message: `🎉 Tables swap` }), success);
+			}
 			case '/admin/tables/changeReadyState': {
 				await stub.changeReadyState(request);
 				await stub.notifyAll(`tables ready`);
