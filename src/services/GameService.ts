@@ -64,7 +64,10 @@ export class GameService {
 		while (usedTableNames.filter((tableName) => tableName.startsWith(`Table ${nextTableAvailable} `)).length > 0) {
 			nextTableAvailable++;
 		}
-        let users = tables.find((tableWithUsers) => tableWithUsers.table.panama)!!.teams[0].users.filter(user => pseudos.indexOf(user.pseudo) !== -1); ;
+        let users = tables.find((tableWithUsers) => tableWithUsers.table.panama)!!.teams[0].users.filter(user => pseudos.indexOf(user.pseudo) !== -1);
+        if (users.length !== 4) {
+            throw 'Cannot create table since users are not fully in panama';
+        }
         let teams: Team[] = [
             {
                 name: 'red',
