@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" ng-app="meltdownApp">
 	<head>
 		<meta charset="UTF-8" />
@@ -9,17 +9,15 @@
 		<script src="history.js"></script>
 	</head>
 	<body ng-controller="HistoryCtrl as ctrl">
-		<div class="form" style="max-width: 900px;">
-			<h2 style="color: var(--gold); margin-top: 0;">Historique de mes parties</h2>
-			<p style="color: var(--text-secondary);" ng-if="ctrl.history.length === 0">Aucune partie terminee pour le moment.</p>
+		<div class="form" style="max-width: 900px">
+			<h2 style="color: var(--gold); margin-top: 0; font-size: 1.1em">Historique de mes parties</h2>
+			<p style="color: var(--text-secondary); font-size: 13px" ng-if="ctrl.history.length === 0">Aucune partie terminee pour le moment.</p>
 		</div>
 
 		<div id="tables" ng-if="ctrl.history.length > 0">
 			<div ng-repeat="game in ctrl.history">
 				<div class="table_ready_status">
-					<span ng-class="game.userWon ? 'game-won' : 'game-lost'">
-						{{game.userWon ? 'VICTOIRE' : 'DEFAITE'}}
-					</span>
+					<span ng-class="game.userWon ? 'game-won' : 'game-lost'"> {{game.userWon ? 'VICTOIRE' : 'DEFAITE'}} </span>
 					- {{game.tableName}}
 				</div>
 				<table class="tables">

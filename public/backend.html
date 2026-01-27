@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -11,14 +11,15 @@
 
 	<body ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm">
 		<div class="button_container_admin">
-			<h1 ng-show="vm.timer>0" style="margin: 40px auto">Tirage automatique des tables dans {{vm.getTimerRendering(vm.timer)}}</h1>
+			<h1 ng-show="vm.timer>0" style="margin: 16px auto; font-size: 1.2em">
+				Tirage automatique des tables dans {{vm.getTimerRendering(vm.timer)}}
+			</h1>
 		</div>
 		<div class="button_container_admin">
 			<button class="secondary_background" type="button" ng-click="vm.clearTables()">Vider tables</button>
 			<button class="secondary_background" type="button" ng-click="vm.generateTables()">Distribuer Tables</button>
 			<button class="secondary_background" type="button" ng-click="vm.reshuffleTables()">Re-Mélanger Tables</button>
 			<button class="secondary_background" type="button" ng-click="vm.notifyAll()">Notifier tout le monde</button>
-
 		</div>
 		<div class="button_container_admin">
 			<button class="secondary_background" type="button" ng-click="vm.launchTimer(5)">Lancer timer 5 min</button>
@@ -43,7 +44,7 @@
 			<table class="tables">
 				<thead>
 					<tr>
-						<th style="width:30px"></th>
+						<th style="width: 30px"></th>
 						<th>Joueur</th>
 						<th ng-if="!table.panama">Equipe</th>
 						<th>Tarot</th>
@@ -55,7 +56,13 @@
 				</thead>
 				<tbody>
 					<tr ng-repeat="user in table.users">
-						<td style="width:30px"><input ng-click="vm.toggleUser(user.pseudo, $event.target.checked)" type="checkbox" ng-checked="vm.pseudosSelected.indexOf(user.pseudo)!== -1"/></td>
+						<td style="width: 30px">
+							<input
+								ng-click="vm.toggleUser(user.pseudo, $event.target.checked)"
+								type="checkbox"
+								ng-checked="vm.pseudosSelected.indexOf(user.pseudo)!== -1"
+							/>
+						</td>
 						<td ng-style="{'color': user.ready ? '#006400' : '#FF8C00'}">{{user.pseudo}}</td>
 						<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
 						<td ng-if="!user.canPlayTarot" ng-click="vm.canPlayTarot(user.pseudo, true)" style="cursor: pointer">❌</td>

@@ -25,14 +25,14 @@
 	--hover-overlay: rgba(212, 175, 55, 0.1);
 
 	/* Shadows */
-	--shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
-	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(10, 77, 46, 0.2);
-	--shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.7), 0 0 40px rgba(10, 77, 46, 0.3);
-	--shadow-gold: 0 0 20px rgba(212, 175, 55, 0.3);
+	--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+	--shadow-md: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 10px rgba(10, 77, 46, 0.15);
+	--shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(10, 77, 46, 0.2);
+	--shadow-gold: 0 0 10px rgba(212, 175, 55, 0.25);
 
 	--font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-	--border-radius: 16px;
-	--border-radius-sm: 10px;
+	--border-radius: 10px;
+	--border-radius-sm: 6px;
 }
 
 * {
@@ -48,9 +48,28 @@ html {
 
 body {
 	margin: 0;
-	padding: 20px;
+	padding: 10px;
 	color: var(--text-primary);
-	line-height: 1.6;
+	line-height: 1.4;
+}
+
+h1,
+h2,
+h3 {
+	margin: 0 0 8px 0;
+	line-height: 1.2;
+}
+
+h1 {
+	font-size: 1.4em;
+}
+
+h2 {
+	font-size: 1.15em;
+}
+
+h3 {
+	font-size: 1em;
 }
 
 .secondary_background {
@@ -66,14 +85,14 @@ body {
 
 .tables {
 	background: var(--card-surface);
-	border: 2px solid var(--border-accent);
+	border: 1px solid var(--border-accent);
 	border-radius: var(--border-radius);
 	overflow: hidden;
 	padding: 0;
-	margin-top: 24px;
-	margin-bottom: 24px;
-	box-shadow: var(--shadow-md);
-	transition: all 0.3s ease;
+	margin-top: 12px;
+	margin-bottom: 12px;
+	box-shadow: var(--shadow-sm);
+	transition: all 0.2s ease;
 	position: relative;
 }
 
@@ -89,30 +108,30 @@ body {
 }
 
 .tables:hover {
-	box-shadow: var(--shadow-lg);
-	transform: translateY(-4px);
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px);
 	border-color: var(--gold);
 }
 
 .table_ready_status {
 	margin: 0;
-	padding: 18px 24px;
+	padding: 10px 14px;
 	font-weight: 700;
-	font-size: 18px;
+	font-size: 14px;
 	background: linear-gradient(135deg, var(--felt-green) 0%, var(--felt-green-dark) 100%);
 	color: var(--gold);
-	border-bottom: 2px solid var(--border-accent);
-	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-	letter-spacing: 0.5px;
+	border-bottom: 1px solid var(--border-accent);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+	letter-spacing: 0.3px;
 }
 
 .table_separator {
 	border: none;
-	border-top: 2px solid var(--border-accent);
-	margin: 40px auto;
+	border-top: 1px solid var(--border-accent);
+	margin: 16px auto;
 	width: 90%;
 	max-width: 800px;
-	box-shadow: 0 1px 3px rgba(212, 175, 55, 0.1);
+	box-shadow: none;
 }
 
 table {
@@ -127,21 +146,21 @@ thead {
 
 th,
 td {
-	padding: 14px 18px;
+	padding: 8px 10px;
 	text-align: center;
 	border-bottom: 1px solid var(--border-color);
 }
 
 th {
-	font-weight: 700;
-	font-size: 13px;
+	font-weight: 600;
+	font-size: 11px;
 	text-transform: uppercase;
-	letter-spacing: 1px;
+	letter-spacing: 0.5px;
 	color: var(--gold);
 }
 
 td {
-	font-size: 15px;
+	font-size: 13px;
 	color: var(--text-primary);
 }
 
@@ -170,13 +189,13 @@ tbody tr:hover {
 }
 
 form {
-	max-width: 520px;
-	margin: 0 auto 32px;
-	padding: 32px;
+	max-width: 480px;
+	margin: 0 auto 16px;
+	padding: 16px;
 	background: var(--card-surface);
-	border: 2px solid var(--border-accent);
+	border: 1px solid var(--border-accent);
 	border-radius: var(--border-radius);
-	box-shadow: var(--shadow-lg);
+	box-shadow: var(--shadow-md);
 	position: relative;
 }
 
@@ -194,13 +213,13 @@ form::before {
 }
 
 .form {
-	max-width: 520px;
-	margin: 0 auto 32px;
-	padding: 32px;
+	max-width: 480px;
+	margin: 0 auto 16px;
+	padding: 16px;
 	background: var(--card-surface);
-	border: 2px solid var(--border-accent);
+	border: 1px solid var(--border-accent);
 	border-radius: var(--border-radius);
-	box-shadow: var(--shadow-lg);
+	box-shadow: var(--shadow-md);
 	position: relative;
 }
 
@@ -219,24 +238,24 @@ form::before {
 
 label {
 	display: block;
-	margin-bottom: 10px;
-	font-weight: 700;
+	margin-bottom: 6px;
+	font-weight: 600;
 	color: var(--gold);
 	text-transform: uppercase;
-	font-size: 13px;
-	letter-spacing: 1px;
+	font-size: 11px;
+	letter-spacing: 0.5px;
 }
 
 input[type="text"] {
 	width: 100%;
-	padding: 14px 18px;
-	margin-bottom: 20px;
+	padding: 10px 12px;
+	margin-bottom: 12px;
 	background: var(--surface-dark);
-	border: 2px solid var(--border-color);
+	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius-sm);
-	font-size: 16px;
+	font-size: 14px;
 	color: var(--text-primary);
-	transition: all 0.3s ease;
+	transition: all 0.2s ease;
 	font-family: var(--font-family);
 }
 
@@ -256,14 +275,14 @@ input[type="text"]:disabled {
 
 input[type="password"] {
 	width: 100%;
-	padding: 14px 18px;
-	margin-bottom: 20px;
+	padding: 10px 12px;
+	margin-bottom: 12px;
 	background: var(--surface-dark);
-	border: 2px solid var(--border-color);
+	border: 1px solid var(--border-color);
 	border-radius: var(--border-radius-sm);
-	font-size: 16px;
+	font-size: 14px;
 	color: var(--text-primary);
-	transition: all 0.3s ease;
+	transition: all 0.2s ease;
 	font-family: var(--font-family);
 }
 
@@ -283,19 +302,19 @@ input[type="password"]:disabled {
 
 button {
 	flex: 1;
-	padding: 14px 24px;
+	padding: 8px 14px;
 	background: linear-gradient(135deg, var(--felt-green-light) 0%, var(--felt-green) 100%);
 	color: var(--gold);
-	border: 2px solid var(--border-accent);
+	border: 1px solid var(--border-accent);
 	border-radius: var(--border-radius-sm);
 	cursor: pointer;
-	font-size: 15px;
-	font-weight: 700;
+	font-size: 12px;
+	font-weight: 600;
 	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	transition: all 0.3s ease;
+	letter-spacing: 0.3px;
+	transition: all 0.2s ease;
 	font-family: var(--font-family);
-	box-shadow: var(--shadow-md);
+	box-shadow: var(--shadow-sm);
 	position: relative;
 	overflow: hidden;
 }
@@ -338,22 +357,22 @@ button:disabled {
 
 .button_container {
 	max-width: 1200px;
-	margin: 32px auto;
+	margin: 12px auto;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 14px;
-	padding: 0 20px;
+	gap: 8px;
+	padding: 0 10px;
 }
 
 .button_container button {
-	min-width: 200px;
+	min-width: 140px;
 }
 
 .button_container_admin {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 14px;
-	margin-top: 24px;
+	gap: 8px;
+	margin-top: 10px;
 }
 
 
@@ -365,20 +384,20 @@ button:disabled {
 
 #tables {
 	max-width: 1200px;
-	margin: 40px auto;
-	padding: 0 20px;
+	margin: 16px auto;
+	padding: 0 10px;
 }
 
 #messages {
 	max-width: 1200px;
-	margin: 24px auto;
-	padding: 18px 28px;
+	margin: 12px auto;
+	padding: 10px 16px;
 	background: var(--card-surface);
-	border-left: 4px solid var(--gold);
+	border-left: 3px solid var(--gold);
 	border-radius: var(--border-radius-sm);
-	box-shadow: var(--shadow-md);
+	box-shadow: var(--shadow-sm);
 	color: var(--text-secondary);
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 600;
 	font-style: italic;
 }
@@ -387,10 +406,11 @@ a {
 	color: var(--gold);
 	text-decoration: none;
 	font-weight: 600;
-	transition: all 0.3s ease;
+	transition: all 0.2s ease;
 	display: inline-block;
-	margin: 8px 0;
-	text-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+	margin: 4px 0;
+	font-size: 13px;
+	text-shadow: 0 0 6px rgba(212, 175, 55, 0.25);
 }
 
 a:hover {
@@ -402,16 +422,16 @@ a:hover {
 
 .links-container {
 	max-width: 1200px;
-	margin: 32px auto;
-	padding: 24px;
+	margin: 12px auto;
+	padding: 12px 16px;
 	background: var(--card-surface);
 	border: 1px solid var(--border-accent);
 	border-radius: var(--border-radius-sm);
-	box-shadow: var(--shadow-md);
+	box-shadow: var(--shadow-sm);
 }
 
 .links-container a {
-	margin-right: 32px;
+	margin-right: 16px;
 }
 
 .lebar {
@@ -467,11 +487,11 @@ a:hover {
 
 @media (max-width: 768px) {
 	body {
-		padding: 12px;
+		padding: 6px;
 	}
 
 	form {
-		padding: 20px;
+		padding: 12px;
 	}
 
 	.button_container {
@@ -484,8 +504,8 @@ a:hover {
 	}
 
 	.table_ready_status {
-		font-size: 16px;
-		padding: 12px 16px;
+		font-size: 12px;
+		padding: 8px 10px;
 	}
 
 	.tables {
@@ -501,15 +521,15 @@ a:hover {
 
 	th,
 	td {
-		padding: 8px 10px;
-		font-size: 13px;
+		padding: 6px 8px;
+		font-size: 11px;
 		white-space: nowrap;
 		text-align: center;
 	}
 
 	th {
-		font-size: 11px;
-		padding: 10px 8px;
+		font-size: 10px;
+		padding: 6px;
 	}
 
 	th:first-child,
@@ -530,13 +550,13 @@ a:hover {
 	}
 
 	#tables {
-		padding: 0 12px;
+		padding: 0 6px;
 	}
 }
 
 .error {
 	color: red;
-	font-size: 16px;
-	margin-top: 10px;
-	margin-bottom: 10px;
+	font-size: 13px;
+	margin-top: 6px;
+	margin-bottom: 6px;
 }

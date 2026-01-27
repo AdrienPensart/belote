@@ -13,8 +13,8 @@
 			<h1 class="page-title">🃏 Compteur de Points Belote</h1>
 
 			<!-- Game Mode Selection -->
-			<div class="form" style="max-width: 600px">
-				<h2>Mode de jeu</h2>
+			<div class="form" style="max-width: 500px">
+				<h2 style="margin-top: 0; font-size: 1.1em">Mode de jeu</h2>
 				<div class="game-mode-buttons">
 					<button ng-click="ctrl.setGameMode('belote')" ng-class="{'active': ctrl.gameMode === 'belote'}">Belote Classique</button>
 					<button ng-click="ctrl.setGameMode('coinche')" ng-class="{'active': ctrl.gameMode === 'coinche'}">Coinche</button>
@@ -22,7 +22,7 @@
 			</div>
 
 			<!-- Score Input Form -->
-			<div class="form score-form" style="max-width: 800px">
+			<div class="form score-form" style="max-width: 700px">
 				<h2>Nouvelle Manche</h2>
 
 				<!-- Contract Info -->
@@ -122,7 +122,7 @@
 			</div>
 
 			<!-- Score Table -->
-			<div class="form score-table-container" style="max-width: 800px" ng-if="ctrl.rounds.length > 0">
+			<div class="form score-table-container" style="max-width: 700px" ng-if="ctrl.rounds.length > 0">
 				<h2>Tableau des Scores</h2>
 				<table class="score-table tables">
 					<thead>
@@ -174,7 +174,7 @@
 			</div>
 
 			<!-- Rules Reference -->
-			<div class="form rules-reference" style="max-width: 800px">
+			<div class="form rules-reference" style="max-width: 700px">
 				<h2>📖 Rappel des Règles</h2>
 				<div class="rules-content">
 					<div class="rule-item"><strong>Points totaux par manche:</strong> 162 points (sans bonus)</div>
@@ -201,26 +201,26 @@
 			.score-container {
 				max-width: 1200px;
 				margin: 0 auto;
-				padding: 20px;
+				padding: 10px;
 			}
 
 			.page-title {
 				text-align: center;
 				color: var(--gold);
-				font-size: 2.5em;
-				margin-bottom: 30px;
-				text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+				font-size: 1.8em;
+				margin-bottom: 16px;
+				text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
 			}
 
 			.game-mode-buttons {
 				display: flex;
-				gap: 15px;
+				gap: 10px;
 				justify-content: center;
 			}
 
 			.game-mode-buttons button {
 				flex: 1;
-				max-width: 200px;
+				max-width: 150px;
 			}
 
 			.game-mode-buttons button.active {
@@ -231,22 +231,23 @@
 			.score-form h2 {
 				color: var(--gold);
 				margin-top: 0;
-				border-bottom: 2px solid var(--border-accent);
-				padding-bottom: 10px;
+				border-bottom: 1px solid var(--border-accent);
+				padding-bottom: 6px;
+				font-size: 1.1em;
 			}
 
 			.contract-section,
 			.contract-value-section,
 			.points-input-section,
 			.special-cases {
-				margin-bottom: 25px;
+				margin-bottom: 14px;
 			}
 
 			.team-selector,
 			.coinche-buttons {
 				display: flex;
-				gap: 15px;
-				margin-top: 10px;
+				gap: 10px;
+				margin-top: 6px;
 			}
 
 			.team-btn {
@@ -266,14 +267,14 @@
 			.contract-buttons {
 				display: flex;
 				flex-wrap: wrap;
-				gap: 10px;
-				margin-top: 10px;
-				margin-bottom: 15px;
+				gap: 6px;
+				margin-top: 6px;
+				margin-bottom: 10px;
 			}
 
 			.contract-buttons button {
-				min-width: 60px;
-				padding: 10px 15px;
+				min-width: 50px;
+				padding: 6px 10px;
 			}
 
 			.contract-buttons button.active,
@@ -285,12 +286,12 @@
 			.points-input-section {
 				background: var(--surface-dark);
 				border-radius: var(--border-radius-sm);
-				padding: 20px;
+				padding: 12px;
 			}
 
 			.team-points {
 				display: flex;
-				gap: 30px;
+				gap: 16px;
 			}
 
 			.team-column {
@@ -300,7 +301,8 @@
 
 			.team-column h3 {
 				margin-top: 0;
-				font-size: 1.3em;
+				font-size: 1em;
+				margin-bottom: 6px;
 			}
 
 			.team-column.nous h3 {
@@ -313,11 +315,11 @@
 
 			.team-column input[type='number'] {
 				width: 100%;
-				padding: 14px 18px;
+				padding: 10px 12px;
 				background: var(--card-surface);
-				border: 2px solid var(--border-color);
+				border: 1px solid var(--border-color);
 				border-radius: var(--border-radius-sm);
-				font-size: 24px;
+				font-size: 18px;
 				font-weight: bold;
 				color: var(--text-primary);
 				text-align: center;
@@ -330,35 +332,35 @@
 			}
 
 			.bonus-section {
-				margin-top: 15px;
+				margin-top: 8px;
 			}
 
 			.checkbox-label {
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				gap: 8px;
+				gap: 6px;
 				cursor: pointer;
-				font-size: 14px;
+				font-size: 12px;
 				color: var(--text-secondary);
 			}
 
 			.checkbox-label input[type='checkbox'] {
-				width: 18px;
-				height: 18px;
+				width: 14px;
+				height: 14px;
 				cursor: pointer;
 			}
 
 			.special-buttons {
 				display: flex;
-				gap: 10px;
+				gap: 6px;
 				flex-wrap: wrap;
-				margin-top: 10px;
+				margin-top: 6px;
 			}
 
 			.special-buttons button {
 				flex: 1;
-				min-width: 120px;
+				min-width: 100px;
 			}
 
 			.special-buttons button.active {
@@ -369,22 +371,24 @@
 			.result-preview {
 				background: var(--surface-dark);
 				border-radius: var(--border-radius-sm);
-				padding: 20px;
-				margin-top: 20px;
+				padding: 12px;
+				margin-top: 12px;
 				text-align: center;
 			}
 
 			.result-preview h3 {
 				margin-top: 0;
+				margin-bottom: 8px;
 				color: var(--gold);
+				font-size: 1em;
 			}
 
 			.preview-scores {
 				display: flex;
 				justify-content: center;
 				align-items: center;
-				gap: 20px;
-				margin: 15px 0;
+				gap: 14px;
+				margin: 10px 0;
 			}
 
 			.preview-team {
@@ -393,14 +397,14 @@
 
 			.preview-team .team-name {
 				display: block;
-				font-size: 14px;
+				font-size: 12px;
 				color: var(--text-secondary);
-				margin-bottom: 5px;
+				margin-bottom: 3px;
 			}
 
 			.preview-team .team-score {
 				display: block;
-				font-size: 36px;
+				font-size: 28px;
 				font-weight: bold;
 			}
 
@@ -424,8 +428,8 @@
 
 			.result-message {
 				font-weight: bold;
-				font-size: 16px;
-				padding: 10px;
+				font-size: 13px;
+				padding: 6px;
 				border-radius: var(--border-radius-sm);
 			}
 
@@ -441,9 +445,9 @@
 
 			.add-round-btn {
 				width: 100%;
-				margin-top: 20px;
-				font-size: 18px;
-				padding: 18px;
+				margin-top: 12px;
+				font-size: 14px;
+				padding: 10px;
 			}
 
 			.score-table-container h2 {
@@ -452,7 +456,7 @@
 			}
 
 			.score-table {
-				margin-top: 15px;
+				margin-top: 10px;
 			}
 
 			.score-table th.nous,
@@ -475,7 +479,7 @@
 
 			.total-row {
 				background: var(--surface-lighter);
-				font-size: 1.2em;
+				font-size: 1.1em;
 			}
 
 			.winner-text {
@@ -484,7 +488,7 @@
 			}
 
 			.delete-btn {
-				padding: 5px 10px;
+				padding: 3px 8px;
 				min-width: auto;
 				background: transparent;
 				border: 1px solid var(--poker-red);
@@ -497,30 +501,32 @@
 			}
 
 			.table-actions {
-				margin-top: 20px;
+				margin-top: 12px;
 				text-align: center;
 			}
 
 			.rules-reference {
-				margin-top: 30px;
+				margin-top: 16px;
 			}
 
 			.rules-reference h2 {
 				color: var(--gold);
 				margin-top: 0;
+				font-size: 1.1em;
 			}
 
 			.rules-content {
 				display: grid;
-				gap: 12px;
+				gap: 8px;
 			}
 
 			.rule-item {
-				padding: 12px 15px;
+				padding: 8px 10px;
 				background: var(--surface-dark);
 				border-radius: var(--border-radius-sm);
-				border-left: 3px solid var(--gold);
+				border-left: 2px solid var(--gold);
 				color: var(--text-secondary);
+				font-size: 12px;
 			}
 
 			.rule-item strong {

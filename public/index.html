@@ -10,7 +10,9 @@
 	</head>
 	<body ng-controller="MainController as ctrl">
 		<div class="button_container">
-			<h1 ng-show="ctrl.timer>0" style="margin: 40px auto">Tirage automatique des tables dans {{ctrl.getTimerRendering(ctrl.timer)}}</h1>
+			<h1 ng-show="ctrl.timer>0" style="margin: 16px auto; font-size: 1.2em">
+				Tirage automatique des tables dans {{ctrl.getTimerRendering(ctrl.timer)}}
+			</h1>
 		</div>
 		<div class="button_container" ng-if="!ctrl.onTable">
 			<button class="secondary_background" ng-click="ctrl.quit()">Quitter Meltdown ({{ctrl.user.pseudo}})</button>
@@ -67,7 +69,7 @@
 						</tr>
 					</tbody>
 				</table>
-				<hr class="table_separator" />
+				<hr class="table_separator" style="margin: 10px auto" />
 			</div>
 		</div>
 
