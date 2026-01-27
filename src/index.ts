@@ -104,8 +104,12 @@ export default {
 				if (!user.admin && !canCreateThisTable) {
 					return new Response(JSON.stringify({ message: 'table cant be created' }), { status: 400 });
 				}
-
-				await stub.createManualTable(body.pseudos, gameMode!!);
+				try {
+					await stub.createManualTable(body.pseudos, gameMode!!);
+				} catch(e) {
+					return new Response(JSON.stringify({ message: 'table users not all in panama' }), { status: 400 });
+				}
+				
 				await stub.notifyAll(`tables generated`);
 				return new Response('ok', { status: 200 });
 			}
