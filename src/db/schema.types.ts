@@ -32,6 +32,21 @@ export type Stat = {
   value: string;
 };
 
+export type GameHistoryPlayer = {
+  pseudo: string;
+  team: string;
+  winner: boolean;
+};
+
+export type GameHistory = {
+  tableId: number;
+  tableName: string;
+  gameMode: string;
+  finishedAt: number | null;
+  players: GameHistoryPlayer[];
+  userWon: boolean;
+};
+
 export type AlarmEvent = { id:string, runAt:number, repeatMs:number };
 
 // ======================================================================
