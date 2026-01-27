@@ -25,20 +25,8 @@ export class MyDurableObject extends DurableObject<Env> {
 		ctx.blockConcurrencyWhile(async () => {
 			await this._migrate();
 			let currentAlarm = await this.storage.getAlarm();
-			if (currentAlarm != null) {
-				if (currentAlarm < Date.now()) {
-					await this.storage.deleteAlarm();
-					currentAlarm = null;
-				}
-			}
-			const events: Map<string,AlarmEvent> = await this.ctx.storage.list({ prefix: "event:" });
-			for (const [key, event] of events) {
-				if (event.runAt <= Date.now()) {
-					await this.ctx.storage.delete(event.id);
-				}
-			}
-			if (currentAlarm == null) {
-				await this.scheduleEvent('repeatTimer1Hour', Date.now()+REPEAT_ALARM_TIMER, REPEAT_ALARM_TIMER);
+			if (currentAlarm != null && currentAlarm < Date.now()) {
+				await this.alarm();
 			}
 		});
 	}
@@ -113,6 +101,10 @@ export class MyDurableObject extends DurableObject<Env> {
 	}
 
 	async timeLeftUntilAlarm(): Promise<number> {
+		const events: Map<string,AlarmEvent> = await this.ctx.storage.list({ prefix: "event:" });
+		if (events.get('event:repeatTimer1Hour') === undefined) {
+			await this.scheduleEvent('repeatTimer1Hour', Date.now()+REPEAT_ALARM_TIMER, REPEAT_ALARM_TIMER);
+		}
 		const timerScheduledAt = await this.ctx.storage.get<number>("timerGameLaunchScheduledAt");
 
 		if (!timerScheduledAt) return -1;             // no alarm set
@@ -185,6 +177,10 @@ export class MyDurableObject extends DurableObject<Env> {
 
 		// regenerate
 		await this.adminGenerateTables();
+	}
+
+	async swapPeople(pseudos: string[]) {
+		await this.gameService.swapPeople(pseudos);
 	}
 
 	async changeReadyState(request: Request) {

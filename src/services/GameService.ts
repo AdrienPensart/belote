@@ -175,6 +175,40 @@ export class GameService {
         return [...map.values()];
     }
 
+    public async swapPeople(pseudos: string[]) {
+        let tables = await this.getTables();
+        let teamPlayerOne;
+        let teamPlayerTwo;
+        let userIdPlayerOne: number = 0;
+        let userIdPlayerTwo: number = 0;
+        let tableIdPlayerOne: number = 0;
+        let tableIdPlayerTwo: number = 0;
+        for (const fullTable of tables) {
+             for (const team of fullTable.teams) {
+                    for (const user of team.users) {
+                        if (user.pseudo === pseudos[0]) {
+                            teamPlayerOne = team.name;
+                            userIdPlayerOne = user.id;
+                            tableIdPlayerOne = fullTable.table.id;
+                        }
+                        if (user.pseudo === pseudos[1]) {
+                            teamPlayerTwo = team.name;
+                            userIdPlayerTwo = user.id;
+                            tableIdPlayerTwo = fullTable.table.id;
+                        }
+                    }
+                }
+        }
+        if (teamPlayerOne && teamPlayerTwo) {
+            await this.db.update(tablesUsers)
+                            .set({ team: teamPlayerTwo, tableId: tableIdPlayerTwo })
+                            .where(and(eq(tablesUsers.tableId, tableIdPlayerOne),eq(tablesUsers.userId, userIdPlayerOne)));
+            await this.db.update(tablesUsers)
+                            .set({ team: teamPlayerOne, tableId: tableIdPlayerOne })
+                            .where(and(eq(tablesUsers.tableId, tableIdPlayerTwo),eq(tablesUsers.userId, userIdPlayerTwo)));
+        }
+    }
+
     public async changeReadyState(request: Request) {
         const body: {ready: boolean, tableId: number} = await request.json();
         let tables = await this.getTables();
