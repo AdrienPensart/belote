@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en" ng-app="meltdownApp">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Compteur de Points - Meltdown Belote</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+		<script src="score.js"></script>
+	</head>
+	<body ng-controller="ScoreCtrl as ctrl">
+		<div class="score-container">
+			<h1 class="page-title">🃏 Compteur de Points Belote</h1>
+
+			<!-- Game Mode Selection -->
+			<div class="form" style="max-width: 600px">
+				<h2>Mode de jeu</h2>
+				<div class="game-mode-buttons">
+					<button ng-click="ctrl.setGameMode('belote')" ng-class="{'active': ctrl.gameMode === 'belote'}">Belote Classique</button>
+					<button ng-click="ctrl.setGameMode('coinche')" ng-class="{'active': ctrl.gameMode === 'coinche'}">Coinche</button>
+				</div>
+			</div>
+
+			<!-- Score Input Form -->
+			<div class="form score-form" style="max-width: 800px">
+				<h2>Nouvelle Manche</h2>
+
+				<!-- Contract Info -->
+				<div class="contract-section">
+					<label>Équipe Preneuse</label>
+					<div class="team-selector">
+						<button ng-click="ctrl.setContractTeam('nous')" ng-class="{'active': ctrl.contractTeam === 'nous'}" class="team-btn nous">
+							Nous
+						</button>
+						<button ng-click="ctrl.setContractTeam('eux')" ng-class="{'active': ctrl.contractTeam === 'eux'}" class="team-btn eux">
+							Eux
+						</button>
+					</div>
+				</div>
+
+				<!-- Coinche Contract Value -->
+				<div class="contract-value-section" ng-if="ctrl.gameMode === 'coinche'">
+					<label>Contrat Annoncé</label>
+					<div class="contract-buttons">
+						<button
+							ng-repeat="value in ctrl.contractValues"
+							ng-click="ctrl.setContractValue(value)"
+							ng-class="{'active': ctrl.contractValue === value}"
+						>
+							{{value}}
+						</button>
+					</div>
+					<div class="coinche-buttons">
+						<button ng-click="ctrl.setCoinche(1)" ng-class="{'active': ctrl.coincheLevel === 1}">Normal</button>
+						<button ng-click="ctrl.setCoinche(2)" ng-class="{'active': ctrl.coincheLevel === 2}">Coinché</button>
+						<button ng-click="ctrl.setCoinche(4)" ng-class="{'active': ctrl.coincheLevel === 4}">Surcoinché</button>
+					</div>
+				</div>
+
+				<!-- Points Input -->
+				<div class="points-input-section">
+					<div class="team-points">
+						<div class="team-column nous">
+							<h3>Nous</h3>
+							<label>Points (0-162)</label>
+							<input type="number" ng-model="ctrl.pointsNous" ng-change="ctrl.syncPoints('nous')" min="0" max="162" placeholder="0" />
+							<div class="bonus-section">
+								<label class="checkbox-label">
+									<input type="checkbox" ng-model="ctrl.beloteNous" />
+									Belote/Rebelote (+20)
+								</label>
+							</div>
+						</div>
+						<div class="team-column eux">
+							<h3>Eux</h3>
+							<label>Points (0-162)</label>
+							<input type="number" ng-model="ctrl.pointsEux" ng-change="ctrl.syncPoints('eux')" min="0" max="162" placeholder="0" />
+							<div class="bonus-section">
+								<label class="checkbox-label">
+									<input type="checkbox" ng-model="ctrl.beloteEux" />
+									Belote/Rebelote (+20)
+								</label>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Special Cases -->
+				<div class="special-cases">
+					<label>Cas Spéciaux</label>
+					<div class="special-buttons">
+						<button ng-click="ctrl.setCapot('nous')" ng-class="{'active': ctrl.capot === 'nous'}">Capot Nous</button>
+						<button ng-click="ctrl.setCapot('eux')" ng-class="{'active': ctrl.capot === 'eux'}">Capot Eux</button>
+						<button ng-click="ctrl.setCapot(null)" ng-class="{'active': ctrl.capot === null}">Pas de Capot</button>
+					</div>
+				</div>
+
+				<!-- Calculated Result Preview -->
+				<div class="result-preview" ng-if="ctrl.canCalculate()">
+					<h3>Résultat de la Manche</h3>
+					<div class="preview-scores">
+						<div class="preview-team nous">
+							<span class="team-name">Nous</span>
+							<span class="team-score" ng-class="{'winner': ctrl.getPreviewResult().nousWins}">
+								{{ctrl.getPreviewResult().nousScore}}
+							</span>
+						</div>
+						<div class="preview-vs">vs</div>
+						<div class="preview-team eux">
+							<span class="team-name">Eux</span>
+							<span class="team-score" ng-class="{'winner': !ctrl.getPreviewResult().nousWins}">
+								{{ctrl.getPreviewResult().euxScore}}
+							</span>
+						</div>
+					</div>
+					<div class="result-message" ng-class="ctrl.getPreviewResult().contractSuccess ? 'success' : 'failure'">
+						{{ctrl.getPreviewResult().message}}
+					</div>
+				</div>
+
+				<button class="add-round-btn" ng-click="ctrl.addRound()" ng-disabled="!ctrl.canCalculate()">Ajouter la Manche</button>
+			</div>
+
+			<!-- Score Table -->
+			<div class="form score-table-container" style="max-width: 800px" ng-if="ctrl.rounds.length > 0">
+				<h2>Tableau des Scores</h2>
+				<table class="score-table tables">
+					<thead>
+						<tr>
+							<th>Manche</th>
+							<th>Preneur</th>
+							<th class="nous">Nous</th>
+							<th class="eux">Eux</th>
+							<th>Résultat</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="round in ctrl.rounds">
+							<td>{{$index + 1}}</td>
+							<td>
+								<span ng-class="round.contractTeam">{{round.contractTeam === 'nous' ? 'Nous' : 'Eux'}}</span>
+								<span ng-if="ctrl.gameMode === 'coinche'"> ({{round.contractValue}})</span>
+							</td>
+							<td class="nous">{{round.nousScore}}</td>
+							<td class="eux">{{round.euxScore}}</td>
+							<td>
+								<span ng-class="round.contractSuccess ? 'success-text' : 'failure-text'">
+									{{round.contractSuccess ? 'Contrat réussi' : 'Chute'}}
+								</span>
+							</td>
+							<td>
+								<button class="delete-btn" ng-click="ctrl.removeRound($index)">✕</button>
+							</td>
+						</tr>
+					</tbody>
+					<tfoot>
+						<tr class="total-row">
+							<td colspan="2"><strong>TOTAL</strong></td>
+							<td class="nous"><strong>{{ctrl.totalNous}}</strong></td>
+							<td class="eux"><strong>{{ctrl.totalEux}}</strong></td>
+							<td colspan="2">
+								<span ng-if="ctrl.totalNous > ctrl.totalEux" class="winner-text">Nous menons!</span>
+								<span ng-if="ctrl.totalEux > ctrl.totalNous" class="winner-text">Eux mènent!</span>
+								<span ng-if="ctrl.totalNous === ctrl.totalEux">Égalité</span>
+							</td>
+						</tr>
+					</tfoot>
+				</table>
+
+				<div class="table-actions">
+					<button class="secondary_background" ng-click="ctrl.resetGame()">Nouvelle Partie</button>
+				</div>
+			</div>
+
+			<!-- Rules Reference -->
+			<div class="form rules-reference" style="max-width: 800px">
+				<h2>📖 Rappel des Règles</h2>
+				<div class="rules-content">
+					<div class="rule-item"><strong>Points totaux par manche:</strong> 162 points (sans bonus)</div>
+					<div class="rule-item"><strong>Belote/Rebelote:</strong> +20 points (Roi + Dame d'atout annoncés)</div>
+					<div class="rule-item"><strong>Capot:</strong> 252 points (162 + 90 bonus) pour l'équipe qui fait toutes les levées</div>
+					<div class="rule-item">
+						<strong>Contrat réussi (Belote):</strong> L'équipe preneuse doit faire plus de points que l'adversaire
+					</div>
+					<div class="rule-item"><strong>Chute:</strong> L'équipe adverse marque tous les points (162 + bonus)</div>
+					<div class="rule-item" ng-if="ctrl.gameMode === 'coinche'">
+						<strong>Coinche:</strong> Les points sont multipliés (×2 coinché, ×4 surcoinché)
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="links-container">
+			<a href="/">Index</a>
+			<a href="/stats">Stats</a>
+			<a href="/history">Historique</a>
+		</div>
+
+		<style>
+			.score-container {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 20px;
+			}
+
+			.page-title {
+				text-align: center;
+				color: var(--gold);
+				font-size: 2.5em;
+				margin-bottom: 30px;
+				text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+			}
+
+			.game-mode-buttons {
+				display: flex;
+				gap: 15px;
+				justify-content: center;
+			}
+
+			.game-mode-buttons button {
+				flex: 1;
+				max-width: 200px;
+			}
+
+			.game-mode-buttons button.active {
+				background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+				color: var(--felt-green-dark);
+			}
+
+			.score-form h2 {
+				color: var(--gold);
+				margin-top: 0;
+				border-bottom: 2px solid var(--border-accent);
+				padding-bottom: 10px;
+			}
+
+			.contract-section,
+			.contract-value-section,
+			.points-input-section,
+			.special-cases {
+				margin-bottom: 25px;
+			}
+
+			.team-selector,
+			.coinche-buttons {
+				display: flex;
+				gap: 15px;
+				margin-top: 10px;
+			}
+
+			.team-btn {
+				flex: 1;
+			}
+
+			.team-btn.nous.active {
+				background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+				border-color: #60a5fa;
+			}
+
+			.team-btn.eux.active {
+				background: linear-gradient(135deg, var(--poker-red) 0%, var(--poker-red-dark) 100%);
+				border-color: var(--poker-red-light);
+			}
+
+			.contract-buttons {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				margin-top: 10px;
+				margin-bottom: 15px;
+			}
+
+			.contract-buttons button {
+				min-width: 60px;
+				padding: 10px 15px;
+			}
+
+			.contract-buttons button.active,
+			.coinche-buttons button.active {
+				background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+				color: var(--felt-green-dark);
+			}
+
+			.points-input-section {
+				background: var(--surface-dark);
+				border-radius: var(--border-radius-sm);
+				padding: 20px;
+			}
+
+			.team-points {
+				display: flex;
+				gap: 30px;
+			}
+
+			.team-column {
+				flex: 1;
+				text-align: center;
+			}
+
+			.team-column h3 {
+				margin-top: 0;
+				font-size: 1.3em;
+			}
+
+			.team-column.nous h3 {
+				color: #60a5fa;
+			}
+
+			.team-column.eux h3 {
+				color: var(--poker-red-light);
+			}
+
+			.team-column input[type='number'] {
+				width: 100%;
+				padding: 14px 18px;
+				background: var(--card-surface);
+				border: 2px solid var(--border-color);
+				border-radius: var(--border-radius-sm);
+				font-size: 24px;
+				font-weight: bold;
+				color: var(--text-primary);
+				text-align: center;
+			}
+
+			.team-column input[type='number']:focus {
+				outline: none;
+				border-color: var(--gold);
+				box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+			}
+
+			.bonus-section {
+				margin-top: 15px;
+			}
+
+			.checkbox-label {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 8px;
+				cursor: pointer;
+				font-size: 14px;
+				color: var(--text-secondary);
+			}
+
+			.checkbox-label input[type='checkbox'] {
+				width: 18px;
+				height: 18px;
+				cursor: pointer;
+			}
+
+			.special-buttons {
+				display: flex;
+				gap: 10px;
+				flex-wrap: wrap;
+				margin-top: 10px;
+			}
+
+			.special-buttons button {
+				flex: 1;
+				min-width: 120px;
+			}
+
+			.special-buttons button.active {
+				background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+				border-color: #a78bfa;
+			}
+
+			.result-preview {
+				background: var(--surface-dark);
+				border-radius: var(--border-radius-sm);
+				padding: 20px;
+				margin-top: 20px;
+				text-align: center;
+			}
+
+			.result-preview h3 {
+				margin-top: 0;
+				color: var(--gold);
+			}
+
+			.preview-scores {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				gap: 20px;
+				margin: 15px 0;
+			}
+
+			.preview-team {
+				text-align: center;
+			}
+
+			.preview-team .team-name {
+				display: block;
+				font-size: 14px;
+				color: var(--text-secondary);
+				margin-bottom: 5px;
+			}
+
+			.preview-team .team-score {
+				display: block;
+				font-size: 36px;
+				font-weight: bold;
+			}
+
+			.preview-team.nous .team-score {
+				color: #60a5fa;
+			}
+
+			.preview-team.eux .team-score {
+				color: var(--poker-red-light);
+			}
+
+			.preview-team .team-score.winner {
+				color: var(--gold);
+				text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+			}
+
+			.preview-vs {
+				font-size: 18px;
+				color: var(--text-muted);
+			}
+
+			.result-message {
+				font-weight: bold;
+				font-size: 16px;
+				padding: 10px;
+				border-radius: var(--border-radius-sm);
+			}
+
+			.result-message.success {
+				background: rgba(74, 222, 128, 0.1);
+				color: #4ade80;
+			}
+
+			.result-message.failure {
+				background: rgba(239, 68, 68, 0.1);
+				color: #ef4444;
+			}
+
+			.add-round-btn {
+				width: 100%;
+				margin-top: 20px;
+				font-size: 18px;
+				padding: 18px;
+			}
+
+			.score-table-container h2 {
+				color: var(--gold);
+				margin-top: 0;
+			}
+
+			.score-table {
+				margin-top: 15px;
+			}
+
+			.score-table th.nous,
+			.score-table td.nous {
+				color: #60a5fa;
+			}
+
+			.score-table th.eux,
+			.score-table td.eux {
+				color: var(--poker-red-light);
+			}
+
+			.score-table .success-text {
+				color: #4ade80;
+			}
+
+			.score-table .failure-text {
+				color: #ef4444;
+			}
+
+			.total-row {
+				background: var(--surface-lighter);
+				font-size: 1.2em;
+			}
+
+			.winner-text {
+				color: var(--gold);
+				font-weight: bold;
+			}
+
+			.delete-btn {
+				padding: 5px 10px;
+				min-width: auto;
+				background: transparent;
+				border: 1px solid var(--poker-red);
+				color: var(--poker-red);
+			}
+
+			.delete-btn:hover {
+				background: var(--poker-red);
+				color: white;
+			}
+
+			.table-actions {
+				margin-top: 20px;
+				text-align: center;
+			}
+
+			.rules-reference {
+				margin-top: 30px;
+			}
+
+			.rules-reference h2 {
+				color: var(--gold);
+				margin-top: 0;
+			}
+
+			.rules-content {
+				display: grid;
+				gap: 12px;
+			}
+
+			.rule-item {
+				padding: 12px 15px;
+				background: var(--surface-dark);
+				border-radius: var(--border-radius-sm);
+				border-left: 3px solid var(--gold);
+				color: var(--text-secondary);
+			}
+
+			.rule-item strong {
+				color: var(--text-primary);
+			}
+
+			span.nous {
+				color: #60a5fa;
+				font-weight: bold;
+			}
+
+			span.eux {
+				color: var(--poker-red-light);
+				font-weight: bold;
+			}
+
+			@media (max-width: 600px) {
+				.team-points {
+					flex-direction: column;
+				}
+
+				.preview-scores {
+					flex-direction: column;
+					gap: 10px;
+				}
+
+				.preview-vs {
+					display: none;
+				}
+			}
+		</style>
+	</body>
+</html>

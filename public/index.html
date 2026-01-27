@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" ng-app="meltdownApp">
 	<head>
 		<meta charset="UTF-8" />
@@ -9,7 +9,6 @@
 		<script src="index_app.js"></script>
 	</head>
 	<body ng-controller="MainController as ctrl">
-		
 		<div class="button_container">
 			<h1 ng-show="ctrl.timer>0" style="margin: 40px auto">Tirage automatique des tables dans {{ctrl.getTimerRendering(ctrl.timer)}}</h1>
 		</div>
@@ -31,11 +30,11 @@
 				<div class="table_ready_status">
 					<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
 				</div>
-				
+
 				<table class="tables">
 					<thead>
 						<tr>
-							<th ng-if="table.panama" style="width:30px"></th>
+							<th ng-if="table.panama" style="width: 30px"></th>
 							<th>Joueur</th>
 							<th>Tarot</th>
 							<th>Deux tables</th>
@@ -46,7 +45,13 @@
 					</thead>
 					<tbody>
 						<tr ng-repeat="user in table.users" ng-class="user.ready ? 'user_ready' : 'user_not_ready'">
-							<td style="width:30px" ng-if="table.panama"><input ng-click="ctrl.toggleUser(user.pseudo, $event.target.checked)" type="checkbox" ng-checked="ctrl.pseudosSelected.indexOf(user.pseudo)!== -1"/></td>
+							<td style="width: 30px" ng-if="table.panama">
+								<input
+									ng-click="ctrl.toggleUser(user.pseudo, $event.target.checked)"
+									type="checkbox"
+									ng-checked="ctrl.pseudosSelected.indexOf(user.pseudo)!== -1"
+								/>
+							</td>
 							<td ng-class="{'username_cell': user.pseudo == ctrl.user.pseudo}">
 								{{user.pseudo}}<span ng-if="user.pseudo == ctrl.user.pseudo"> (you)</span>
 							</td>
@@ -54,7 +59,11 @@
 							<td>{{user.canPlayTwoTables ? '✅' : '❌'}}</td>
 							<td>{{user.ready ? '✅' : '❌'}}</td>
 							<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
-							<td><button ng-click="ctrl.finish(table.id,user.team)" ng-if="!table.panama && table.inThatTable">Equipe {{user.team}} gagnante!</button></td>
+							<td>
+								<button ng-click="ctrl.finish(table.id,user.team)" ng-if="!table.panama && table.inThatTable">
+									Equipe {{user.team}} gagnante!
+								</button>
+							</td>
 						</tr>
 					</tbody>
 				</table>
@@ -62,15 +71,16 @@
 			</div>
 		</div>
 
-	<div class="links-container">
-		<a href="/stats">Stats</a>
-		<a href="/history">Historique</a>
-		<a href="/account">Mon Compte</a>
-		<a href="/help" target="_blank">Aide</a>
-		<a href="/valeurs.webp" target="_blank">Valeur des cartes</a>
-		<a href="/backend" target="_blank" ng-if="ctrl.user.admin">Backend</a>
-		<a href="https://github.com/AdrienPensart/belote" target="_blank">Code source</a>
-		<a href="https://github.com/AdrienPensart/belote/issues" target="_blank">Bug Tracker</a>
-	</div>
-</body>
+		<div class="links-container">
+			<a href="/score">Compteur de Points</a>
+			<a href="/stats">Stats</a>
+			<a href="/history">Historique</a>
+			<a href="/account">Mon Compte</a>
+			<a href="/help" target="_blank">Aide</a>
+			<a href="/valeurs.webp" target="_blank">Valeur des cartes</a>
+			<a href="/backend" target="_blank" ng-if="ctrl.user.admin">Backend</a>
+			<a href="https://github.com/AdrienPensart/belote" target="_blank">Code source</a>
+			<a href="https://github.com/AdrienPensart/belote/issues" target="_blank">Bug Tracker</a>
+		</div>
+	</body>
 </html>
