@@ -55,7 +55,7 @@ export class UserService {
         const userResult = await this.db
             .select()
             .from(users)
-            .where(eq(users.pseudo, pseudo.toLowerCase())).get();
+            .where(eq(lower(users.pseudo), pseudo.toLowerCase())).get();
         if (!userResult) {
             return new Response('User not found', {
                 status: 404,
