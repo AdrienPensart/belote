@@ -44,7 +44,8 @@ function basicUser(name: string) : User {
 		lastActiveAt: null,
 		password: null,
 		token: null,
-		tokenValidity: null
+		tokenValidity: null,
+		email: '',
 	};
 }
 

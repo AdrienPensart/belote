@@ -5,19 +5,20 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Meltdown Belote</title>
 		<link rel="stylesheet" href="/styles.css" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 		<script src="login.js"></script>
 	</head>
 	<body ng-controller="LoginCtrl as ctrl">
 		<form ng-submit="ctrl.auth()">
             <h2>Connexion</h2>
-			<label>Email:</label>
-			<input type="text" ng-model="ctrl.email" placeholder="Ton ostie d'email" required />
+			<label>Email / pseudo:</label>
+			<input type="text" ng-model="ctrl.email" placeholder="Ton ostie d'email ou pseudo" required />
             <label>Mot de passe:</label>
 			<input type="password" ng-model="ctrl.password" placeholder="Ton ostie de mot de passe" required />
             
             <h2 class="error" ng-if="ctrl.loginError">Verify your credentials</h2>
-			<button type="submit" ng-disabled="!ctrl.pseudo || !ctrl.password">Je me connecte a la secte</button>
+			<button type="submit" ng-disabled="!ctrl.email || !ctrl.password">Je me connecte a la secte</button>
 		</form>
 
         <form ng-submit="ctrl.createAccount()">
