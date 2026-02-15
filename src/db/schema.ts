@@ -14,6 +14,7 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
 
   pseudo: text("pseudo").notNull().unique(),
+  email: text("email").notNull().unique(),
   password: text("password"),
   ready: integer("ready", { mode: "boolean" })
     .notNull()

@@ -12,14 +12,19 @@ export class UserService {
         this.db = db;
     }
     async createAccount(request: Request): Promise<Response> {
-        const body: {pseudo: string, password: string} = await request.json();
+        const body: {pseudo: string, password: string, email: string} = await request.json();
         const pseudo = body.pseudo;
         const password = body.password;
+        const email =  body.email;
         const userResult = await this.db
             .select()
             .from(users)
             .where(eq(lower(users.pseudo), pseudo.toLowerCase()));
-        if (userResult[0]) {
+        const userResultMail = await this.db
+            .select()
+            .from(users)
+            .where(eq(lower(users.email), email.toLowerCase()));
+        if (userResult[0] || userResultMail[0]) {
             return new Response('existing user', {
                 status: 401,
             });
@@ -33,6 +38,7 @@ export class UserService {
         .insert(users)
         .values({
             pseudo,
+            email,
             password: await hash(password, saltRounds),               // store plain password only for testing!
             ready: false,
             admin: false,
@@ -75,13 +81,13 @@ export class UserService {
         });
     }
     async authenticate(request: Request): Promise<User | undefined> {
-        const body: {pseudo: string, password: string} = await request.json();
-        const pseudo = body.pseudo;
+        const body: {email: string, password: string} = await request.json();
+        const pseudo = body.email;
         const password = body.password;
         const userResult = await this.db
             .select()
             .from(users)
-            .where(eq(lower(users.pseudo), pseudo.toLowerCase())).get();
+            .where(eq(lower(users.email), pseudo.toLowerCase())).get();
         if (!userResult || !await compare(password,userResult.password!!)) {
             return undefined;
         }
