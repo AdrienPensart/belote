@@ -16,6 +16,7 @@
 				Tirage automatique des tables dans {{vm.getTimerRendering(vm.timer)}}
 			</h1>
 		</div>
+
 		<div class="button_container_admin">
 			<button class="secondary_background" type="button" ng-click="vm.clearTables()">Vider tables</button>
 			<button class="secondary_background" type="button" ng-click="vm.generateTables()">Distribuer Tables</button>
@@ -78,8 +79,16 @@
 				</tbody>
 			</table>
 		</div>
+
+		<div class="button_container_admin">
+			<a
+				href="/users.html"
+				class="secondary_background"
+				style="display: inline-block; text-decoration: none; padding: 8px 16px; border-radius: 4px; text-align: center"
+				>Gestion des utilisateurs</a
+			>
+		</div>
 		<a href="/" target="_blank">Frontend</a>
-		<a href="/userList" target="_blank">Liste utilisateurs</a>
 		<br />
 	</body>
 </html>

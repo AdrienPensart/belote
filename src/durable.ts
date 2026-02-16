@@ -42,6 +42,18 @@ export class MyDurableObject extends DurableObject<Env> {
 		return await this.gameService.getHistory(user, limit);
 	}
 
+	async adminCreateUser(request: Request) {
+		return await this.userService.adminCreateUser(request);
+	}
+
+	async adminUpdateUser(request: Request, userId: number) {
+		return await this.userService.adminUpdateUser(request, userId);
+	}
+
+	async adminDeleteUser(userId: number) {
+		return await this.userService.adminDeleteUser(userId);
+	}
+
 	async passwordChange(request: Request, pseudo:string, admin: boolean): Promise<Response> {
 		return this.userService.passwordChange(request, pseudo,admin);
 	}
@@ -51,7 +63,7 @@ export class MyDurableObject extends DurableObject<Env> {
 	async authenticate(request: Request): Promise<Response> {
 		const user = await this.userService.authenticate(request);
 		if (!user) {
-			return new Response('you need to login', {
+			return new Response('you need to login (authentication)', {
             	status: 401,
         	});
 		}
@@ -60,13 +72,14 @@ export class MyDurableObject extends DurableObject<Env> {
 		const response = new Response(token, {
             status: 200,
         });
-		response.headers.set('Authorization',token);
+		response.headers.set('Authorization', token);
 		return response;
 	}
-	async validateToken(token: string | undefined, admin: Boolean = false): Promise<User | Response> {
-		return this.userService.validateToken(token,admin);
+	async validateToken(token: string | undefined, admin: boolean = false): Promise<User | Response> {
+		await this.userService.genMissingTokens();
+		return this.userService.validateToken(token, admin);
 	}
-	async changeUserState(request: Request, pseudo:string) {
+	async changeUserState(request: Request, pseudo: string) {
 		await this.userService.changeUserState(request, pseudo);
 	}
 	async getGameModes(): Promise<GameMode[]> {
@@ -85,8 +98,6 @@ export class MyDurableObject extends DurableObject<Env> {
 	async deleteTable(tableId: number) {
 		return await this.gameService.deleteTable(tableId);
 	}
-
-	
 
 	// for admin exclusively
 	async addTimer(request: Request) {
@@ -163,6 +174,11 @@ export class MyDurableObject extends DurableObject<Env> {
 	async getUserList(){
 		return await this.userService.getUserList();
 	}
+
+	async getFullUserList(){
+		return await this.userService.adminGetFullUserList();
+	}
+	
 	async adminGenerateTables() {
 		await this.gameService.generateTables();
 	}

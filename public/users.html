@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Gestion des utilisateurs</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+		<script src="index_backend.js"></script>
+	</head>
+
+	<body ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm">
+		<div class="admin-users">
+			<div class="admin-users__header">
+				<h2>Gestion des utilisateurs</h2>
+				<p>Créer, éditer ou supprimer des comptes (admin requis).</p>
+			</div>
+			<div class="admin-card">
+				<h3>Créer un utilisateur</h3>
+				<div class="admin-form-grid">
+					<label>Pseudo<input type="text" ng-model="vm.newUser.pseudo" placeholder="Pseudo" /></label>
+					<label>Email<input type="email" ng-model="vm.newUser.email" placeholder="Email" /></label>
+					<label>Mot de passe<input type="password" ng-model="vm.newUser.password" placeholder="Mot de passe" /></label>
+					<label class="checkbox-inline"><input type="checkbox" ng-model="vm.newUser.admin" /> Admin</label>
+					<label class="checkbox-inline"><input type="checkbox" ng-model="vm.newUser.ready" /> Prêt</label>
+					<label class="checkbox-inline"><input type="checkbox" ng-model="vm.newUser.canPlayTarot" /> Tarot</label>
+					<label class="checkbox-inline"><input type="checkbox" ng-model="vm.newUser.canPlayTwoTables" /> Deux tables</label>
+				</div>
+				<button class="secondary_background" type="button" ng-click="vm.createUser()">Créer</button>
+			</div>
+
+			<div class="admin-card">
+				<h3>Utilisateurs existants</h3>
+				<table class="tables user-admin-table">
+					<thead>
+						<tr>
+							<th>Pseudo</th>
+							<th>Email</th>
+							<th>Admin</th>
+							<th>Prêt</th>
+							<th>Tarot</th>
+							<th>Deux tables</th>
+							<th>Validité token</th>
+							<th>Dernière activité</th>
+							<th>Nouveau mot de passe</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="user in vm.users">
+							<td><input type="text" ng-model="user.pseudo" /></td>
+							<td><input type="email" ng-model="user.email" /></td>
+							<td class="center"><input type="checkbox" ng-model="user.admin" /></td>
+							<td class="center"><input type="checkbox" ng-model="user.ready" /></td>
+							<td class="center"><input type="checkbox" ng-model="user.canPlayTarot" /></td>
+							<td class="center"><input type="checkbox" ng-model="user.canPlayTwoTables" /></td>
+							<td>{{vm.formatTimestamp(user.tokenValidity)}}</td>
+							<td>{{vm.formatTimestamp(user.lastActiveAt)}}</td>
+							<td><input type="password" ng-model="user.newPassword" placeholder="Ne pas changer" /></td>
+							<td class="admin-actions">
+								<button class="secondary_background" type="button" ng-click="vm.saveUser(user)">Sauver</button>
+								<button class="secondary_background" type="button" ng-click="vm.deleteUserAdmin(user)">Supprimer</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<a href="/backend.html">← Retour au backend</a>
+		<br />
+
+		<style>
+			.admin-users {
+				margin: 16px;
+				padding: 12px;
+				background: var(--surface-dark, #0f172a);
+				border: 1px solid var(--border-color, #2a3b4d);
+				border-radius: 8px;
+			}
+			.admin-users__header h2 {
+				margin: 0 0 4px 0;
+			}
+			.admin-users__header p {
+				margin: 0 0 12px 0;
+				color: var(--text-secondary, #cbd5e1);
+			}
+			.admin-card {
+				background: var(--card-surface, #0b1220);
+				padding: 12px;
+				border-radius: 8px;
+				border: 1px solid var(--border-color, #2a3b4d);
+				margin-bottom: 12px;
+			}
+			.admin-card h3 {
+				margin-top: 0;
+			}
+			.admin-form-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+				gap: 8px;
+				margin-bottom: 10px;
+			}
+			.admin-form-grid label {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+				font-size: 12px;
+			}
+			.checkbox-inline {
+				align-items: center;
+				flex-direction: row !important;
+				gap: 6px;
+			}
+			.user-admin-table input[type='text'],
+			.user-admin-table input[type='email'],
+			.user-admin-table input[type='password'] {
+				width: 100%;
+				box-sizing: border-box;
+			}
+			.user-admin-table th,
+			.user-admin-table td {
+				vertical-align: middle;
+			}
+			.admin-actions button {
+				margin-right: 6px;
+			}
+			.center {
+				text-align: center;
+			}
+		</style>
+	</body>
+</html>

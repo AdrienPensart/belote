@@ -167,3 +167,6 @@ dist
 .wrangler/
 
 users.json
+
+# Localflare generated files
+.localflare/

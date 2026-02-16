@@ -1,6 +1,35 @@
 angular.module('meltdownApp', [])
-    .controller('ScoreCtrl', ['$scope', function ($scope) {
+    .factory('myHttpInterceptor', function ($q) {
+        return {
+            request: function (config) {
+                config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
+                return config;
+            },
+            response: function (response) {
+                return response;
+            },
+            responseError: function (rejection) {
+                console.error('Error response intercepted:', rejection);
+                if (rejection.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                }
+                return $q.reject(rejection);
+            }
+        };
+    })
+    .config(function ($httpProvider) {
+        $httpProvider.interceptors.push('myHttpInterceptor');
+    })
+    .controller('ScoreCtrl', ['$scope', '$http', function ($scope, $http) {
         const vm = this;
+
+        vm.isOnTable = false;
+        vm.loadingTableStatus = true;
+        vm.authToken = (localStorage.getItem('token') || '').trim();
+        if (!vm.authToken) {
+            window.location.href = '/login';
+        }
 
         // Game mode: 'belote' or 'coinche'
         vm.gameMode = 'belote';
@@ -315,6 +344,43 @@ angular.module('meltdownApp', [])
             }
         };
 
+        vm.refreshTablePresence = function () {
+            vm.isOnTable = false;
+            return $http.get('/tables').then((resp) => {
+                const tablesData = resp.data;
+                tablesData.forEach((fullTable) => {
+                    let users = [];
+                    for (var team of fullTable.teams) {
+                        users = [...users, ...team.users.map((user) => {
+                            return {
+                                ...user,
+                                team: team.name
+                            };
+                        })];
+                    }
+                    const onThatTable = users.find((elem) => elem.pseudo === vm.user.pseudo) !== undefined;
+                    if (!fullTable.table.panama && onThatTable) {
+                        vm.isOnTable = true;
+                    }
+                });
+            }).catch((error) => {
+                console.error('Failed to refresh table presence', error);
+            }).finally(() => {
+                vm.loadingTableStatus = false;
+            });
+        };
+
+        vm.initAuth = function () {
+            $http.get('/me').then((response) => {
+                vm.user = response.data;
+                return vm.refreshTablePresence();
+            }).catch((error) => {
+                console.error('Failed to load user information', error);
+                vm.loadingTableStatus = false;
+            });
+        };
+
         // Initialize
         vm.loadGame();
+        vm.initAuth();
     }]);

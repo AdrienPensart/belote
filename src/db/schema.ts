@@ -81,9 +81,9 @@ export const tablesUsers = sqliteTable(
       .default(false),
     team: text("team"),
   },
-  (t: any) => ({
-    pk: primaryKey({ columns: [t.tableId, t.userId] })
-  })
+  (t: any) => [
+    primaryKey({ columns: [t.tableId, t.userId] })
+  ]
 );
 
 
