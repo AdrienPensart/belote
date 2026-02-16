@@ -1,5 +1,5 @@
 import { User } from '../db/schema.types';
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
 import { lower, users } from "../db/schema"; // your schema file
 import { v4 as uuidv4 } from 'uuid';
@@ -82,13 +82,18 @@ export class UserService {
     }
     async authenticate(request: Request): Promise<User | undefined> {
         const body: {email: string, password: string} = await request.json();
-        const pseudo = body.email;
+        const email = body.email;
         const password = body.password;
         const userResult = await this.db
             .select()
             .from(users)
-            .where(eq(lower(users.email), pseudo.toLowerCase())).get();
-        if (!userResult || !await compare(password,userResult.password!!)) {
+            .where(
+                or(
+                    eq(lower(users.email), email.toLowerCase()),
+                    eq(lower(users.pseudo), email.toLowerCase())
+                )
+            ).get();
+        if (!userResult || !await compare(password, userResult.password!!)) {
             return undefined;
         }
 
