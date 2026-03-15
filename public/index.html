@@ -10,10 +10,8 @@
 		<script src="index_app.js"></script>
 	</head>
 	<body ng-controller="MainController as ctrl" ng-cloak>
-		<div class="button_container">
-			<h1 ng-show="ctrl.timer>0" style="margin: 16px auto; font-size: 1.2em">
-				Tirage automatique des tables dans {{ctrl.getTimerRendering(ctrl.timer)}}
-			</h1>
+		<div ng-show="ctrl.timer>0" class="button_container">
+			<h1 style="margin: 16px auto; font-size: 1.2em">Tirage automatique des tables dans {{ctrl.getTimerRendering(ctrl.timer)}}</h1>
 		</div>
 		<div ng-if="ctrl.tablesLoaded && !ctrl.onTable">
 			<div class="button_container">
@@ -38,7 +36,6 @@
 			</div>
 		</div>
 
-		<br />
 		<div id="tables">
 			<div ng-repeat="table in ctrl.tables">
 				<div class="table_ready_status">

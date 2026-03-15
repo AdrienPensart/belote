@@ -10,7 +10,7 @@
 		<script src="index_backend.js"></script>
 	</head>
 
-	<body ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm">
+	<body class="backend" ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm">
 		<div class="button_container_admin">
 			<h1 ng-show="vm.timer>0" style="margin: 16px auto; font-size: 1.2em">
 				Tirage automatique des tables dans {{vm.getTimerRendering(vm.timer)}}

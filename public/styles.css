@@ -57,6 +57,12 @@ body {
 	line-height: 1.4;
 }
 
+body.backend {
+	background: radial-gradient(ellipse at top, #2e1f1a 0%, #17110d 100%);
+	background-attachment: fixed;
+	min-height: 100vh;
+}
+
 h1,
 h2,
 h3 {
