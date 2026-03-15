@@ -64,7 +64,7 @@
 							<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
 							<td>
 								<button ng-click="ctrl.finish(table.id,user.team)" ng-if="!table.panama && table.inThatTable">
-									Equipe {{user.team}} gagnante!
+									Equipe <span ng-style="{ color: user.team }">{{user.team}}</span> gagnante!
 								</button>
 							</td>
 						</tr>
