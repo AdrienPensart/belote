@@ -69,7 +69,7 @@
 						<th>Deux tables</th>
 						<th>Prêt</th>
 						<th ng-if="!table.panama">Fini</th>
-						<th ng-if="table.panama">Supprimer</th>
+						<th ng-if="table.panama">Quitter</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -90,7 +90,7 @@
 						<td ng-if="!user.ready" ng-click="vm.ready(user.pseudo, true)" style="cursor: pointer">❌</td>
 						<td ng-if="user.ready" ng-click="vm.ready(user.pseudo, false)" style="cursor: pointer">✅</td>
 						<td ng-if="!table.panama" ng-click="vm.tableFinished(table.id,user.team)" style="cursor: pointer">🏁</td>
-						<td ng-if="table.panama" ng-click="vm.userDelete(user.pseudo)" style="cursor: pointer">🚮</td>
+						<td ng-if="table.panama" ng-click="vm.userQuit(user.pseudo)" style="cursor: pointer">🚮</td>
 					</tr>
 				</tbody>
 			</table>

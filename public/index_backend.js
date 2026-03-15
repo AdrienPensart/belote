@@ -113,7 +113,7 @@ angular.module('meltdownAdmin', [])
       });
     }
 
-    vm.userDelete = function (pseudo) {
+    vm.userQuit = function (pseudo) {
       $http.get('/admin/users/quit?pseudo=' + encodeURIComponent(pseudo))
         .then(function () {
           vm.refreshTables();

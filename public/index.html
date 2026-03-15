@@ -39,11 +39,11 @@
 						<tr>
 							<th ng-if="table.panama" style="width: 30px"></th>
 							<th>Joueur</th>
-							<th>Tarot</th>
-							<th>Deux tables</th>
-							<th>Prêt</th>
+							<th ng-if="table.panama">Tarot</th>
+							<th ng-if="table.panama">Deux tables</th>
+							<th ng-if="table.panama">Prêt</th>
 							<th ng-if="!table.panama">Equipe</th>
-							<th ng-if="table.inThatTable">Finir table</th>
+							<th ng-if="!table.panama">Finir table</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -58,12 +58,12 @@
 							<td ng-class="{'username_cell': user.pseudo == ctrl.user.pseudo}">
 								{{user.pseudo}}<span ng-if="user.pseudo == ctrl.user.pseudo"> (you)</span>
 							</td>
-							<td>{{user.canPlayTarot ? '✅' : '❌'}}</td>
-							<td>{{user.canPlayTwoTables ? '✅' : '❌'}}</td>
-							<td>{{user.ready ? '✅' : '❌'}}</td>
+							<td ng-if="table.panama">{{user.canPlayTarot ? '✅' : '❌'}}</td>
+							<td ng-if="table.panama">{{user.canPlayTwoTables ? '✅' : '❌'}}</td>
+							<td ng-if="table.panama">{{user.ready ? '✅' : '❌'}}</td>
 							<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
-							<td>
-								<button ng-click="ctrl.finish(table.id,user.team)" ng-if="!table.panama && table.inThatTable">
+							<td ng-if="!table.panama">
+								<button ng-click="ctrl.finish(table.id,user.team)">
 									Equipe <span ng-style="{ color: user.team }">{{user.team}}</span> gagnante!
 								</button>
 							</td>
