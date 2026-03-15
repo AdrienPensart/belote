@@ -42,8 +42,7 @@
 							<th ng-if="table.panama">Tarot</th>
 							<th ng-if="table.panama">Deux tables</th>
 							<th ng-if="table.panama">Prêt</th>
-							<th ng-if="!table.panama">Equipe</th>
-							<th ng-if="!table.panama">Finir table</th>
+							<th ng-if="!table.panama"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -61,7 +60,6 @@
 							<td ng-if="table.panama">{{user.canPlayTarot ? '✅' : '❌'}}</td>
 							<td ng-if="table.panama">{{user.canPlayTwoTables ? '✅' : '❌'}}</td>
 							<td ng-if="table.panama">{{user.ready ? '✅' : '❌'}}</td>
-							<td ng-if="!table.panama"><span ng-style="{ color: user.team }" style="margin-right: 3px">{{user.team}}</span></td>
 							<td ng-if="!table.panama">
 								<button ng-click="ctrl.finish(table.id,user.team)">
 									Equipe <span ng-style="{ color: user.team }">{{user.team}}</span> gagnante!
