@@ -1,4 +1,4 @@
-import { GameMode, Table, User, FullTable, Team, Stat, GameHistory, GameHistoryPlayer } from '../db/schema.types';
+import { GameMode, Table, User, FullTable, Team, Stat, GameHistory, GameHistoryPlayer, PlayerRanking } from '../db/schema.types';
 import { DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
 import { users, tables, tablesUsers, gameModes } from '../db/schema'; // your schema file
 import { and, eq, sql } from 'drizzle-orm';
@@ -342,6 +342,28 @@ export class GameService {
 			});
 		}
 		return stats;
+	}
+
+	public async getRankings(): Promise<PlayerRanking[]> {
+		const rows: { pseudo: string; gamesPlayed: number; wins: number }[] = await this.db.all(sql`
+			SELECT
+				u.pseudo,
+				COUNT(*) AS gamesPlayed,
+				SUM(CASE WHEN tu.winner = 1 THEN 1 ELSE 0 END) AS wins
+			FROM tables_users tu
+			JOIN users u ON u.id = tu.user_id
+			JOIN tables t ON t.id = tu.table_id
+			WHERE t.finished = true AND t.panama = false
+			GROUP BY tu.user_id
+			ORDER BY wins DESC, gamesPlayed ASC
+		`);
+		return rows.map((row, index) => ({
+			rank: index + 1,
+			pseudo: row.pseudo,
+			gamesPlayed: row.gamesPlayed,
+			wins: row.wins,
+			winRate: row.gamesPlayed > 0 ? Math.round((row.wins / row.gamesPlayed) * 100) : 0,
+		}));
 	}
 
 	public async getHistory(user: User, limit: number = 50): Promise<GameHistory[]> {

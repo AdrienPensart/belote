@@ -58,6 +58,9 @@ export default {
 			case '/user/stats': {
 				return new Response(JSON.stringify(await stub.getStats(user)));
 			}
+			case '/user/rankings': {
+				return new Response(JSON.stringify(await stub.getRankings()), success);
+			}
 			case '/user/history': {
 				const limit = parseInt(url.searchParams.get('limit') || '50');
 				return new Response(JSON.stringify(await stub.getHistory(user, limit)), success);

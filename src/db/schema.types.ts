@@ -1,4 +1,4 @@
-import { users, gameModes, tables, tablesUsers } from "./schema";
+import { users, gameModes, tables, tablesUsers } from './schema';
 
 // ======================================================================
 // USERS
@@ -19,35 +19,43 @@ export type Table = typeof tables.$inferSelect;
 export type InsertTable = typeof tables.$inferInsert;
 
 export type Team = {
-    name: string,
-    users: User[]
+	name: string;
+	users: User[];
 };
 
 export type FullTable = {
-  table: Table;
-  teams: Team[];
+	table: Table;
+	teams: Team[];
 };
 
 export type Stat = {
-  value: string;
+	value: string;
 };
 
 export type GameHistoryPlayer = {
-  pseudo: string;
-  team: string;
-  winner: boolean;
+	pseudo: string;
+	team: string;
+	winner: boolean;
 };
 
 export type GameHistory = {
-  tableId: number;
-  tableName: string;
-  gameMode: string;
-  finishedAt: number | null;
-  players: GameHistoryPlayer[];
-  userWon: boolean;
+	tableId: number;
+	tableName: string;
+	gameMode: string;
+	finishedAt: number | null;
+	players: GameHistoryPlayer[];
+	userWon: boolean;
 };
 
-export type AlarmEvent = { id:string, runAt:number, repeatMs:number };
+export type PlayerRanking = {
+	rank: number;
+	pseudo: string;
+	gamesPlayed: number;
+	wins: number;
+	winRate: number;
+};
+
+export type AlarmEvent = { id: string; runAt: number; repeatMs: number };
 
 // ======================================================================
 // TABLES_USERS (JOIN TABLE)

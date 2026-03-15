@@ -38,6 +38,10 @@ export class MyDurableObject extends DurableObject<Env> {
 		return await this.gameService.getStats(user);
 	}
 
+	async getRankings() {
+		return await this.gameService.getRankings();
+	}
+
 	async getHistory(user: User, limit: number = 50): Promise<GameHistory[]> {
 		return await this.gameService.getHistory(user, limit);
 	}

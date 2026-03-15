@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" ng-app="meltdownApp">
 	<head>
 		<meta charset="UTF-8" />
@@ -10,11 +10,36 @@
 		<script src="stats.js"></script>
 	</head>
 	<body ng-controller="StatsCtrl as ctrl">
-       <div class="form">
-            <div ng-repeat="stat in ctrl.stats">{{ stat.value}}</div>
-       </div>
-       <div class="links-container">
-            <a href="/">Index</a>
-	    </div>
-    </body>
+		<div class="form">
+			<div ng-repeat="stat in ctrl.stats">{{ stat.value}}</div>
+		</div>
+
+		<div class="form" style="max-width: 900px" ng-if="ctrl.rankings.length > 0">
+			<h2 style="color: var(--gold); margin-top: 0; font-size: 1.1em">Classement des joueurs</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Joueur</th>
+						<th>Parties</th>
+						<th>Victoires</th>
+						<th>% Victoires</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="player in ctrl.rankings">
+						<td>{{player.rank}}</td>
+						<td>{{player.pseudo}}</td>
+						<td>{{player.gamesPlayed}}</td>
+						<td>{{player.wins}}</td>
+						<td>{{player.winRate}}%</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="links-container">
+			<a href="/">Index</a>
+		</div>
+	</body>
 </html>

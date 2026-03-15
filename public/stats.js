@@ -1,9 +1,9 @@
 angular.module('meltdownApp', [])
-    .factory('myHttpInterceptor', function ($q) {
+	.factory('myHttpInterceptor', function ($q) {
 		return {
-			'request': function(config) {
-			config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
-			return config;
+			'request': function (config) {
+				config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
+				return config;
 			},
 			// Optional method to handle successful responses
 			response: function (response) {
@@ -18,7 +18,7 @@ angular.module('meltdownApp', [])
 				// For example, display error messages, redirect to login, or retry
 				if (rejection.status === 401) {
 					localStorage.removeItem('token');
-					window.location.href='/login';
+					window.location.href = '/login';
 				}
 				console.error('Error response intercepted:', rejection);
 				return $q.reject(rejection); // Always return a rejected promise
@@ -28,9 +28,14 @@ angular.module('meltdownApp', [])
 	.config(function ($httpProvider) {
 		$httpProvider.interceptors.push('myHttpInterceptor');
 	})
-  .controller('StatsCtrl', ['$http', function ($http) {
-    const vm = this;
-    $http.get('/user/stats').then((response) => {
-        vm.stats = response.data;
-    });
-  }]);
+	.controller('StatsCtrl', ['$http', function ($http) {
+		const vm = this;
+		vm.stats = [];
+		vm.rankings = [];
+		$http.get('/user/stats').then((response) => {
+			vm.stats = response.data;
+		});
+		$http.get('/user/rankings').then((response) => {
+			vm.rankings = response.data;
+		});
+	}]);
