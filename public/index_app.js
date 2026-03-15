@@ -98,7 +98,11 @@ angular.module('meltdownApp', [])
           }
           const readyCount = users.filter(u => u.ready).length;
           if (fullTable.table.panama) {
-            users.sort((a, b) => a.pseudo.localeCompare(b.pseudo));
+            users.sort((a, b) => {
+              if (a.pseudo === vm.user.pseudo) return -1;
+              if (b.pseudo === vm.user.pseudo) return 1;
+              return a.pseudo.localeCompare(b.pseudo);
+            });
           }
           return { name: fullTable.table.name, id: fullTable.table.id, panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams: fullTable.teams };
         });
