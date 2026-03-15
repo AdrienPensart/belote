@@ -35,14 +35,13 @@
 				</div>
 
 				<table class="tables">
-					<thead>
+					<thead ng-if="table.panama">
 						<tr>
-							<th ng-if="table.panama" style="width: 30px"></th>
+							<th>Select</th>
 							<th>Joueur</th>
-							<th ng-if="table.panama">Tarot</th>
-							<th ng-if="table.panama">Deux tables</th>
-							<th ng-if="table.panama">Prêt</th>
-							<th ng-if="!table.panama"></th>
+							<th>Tarot</th>
+							<th>Deux tables</th>
+							<th>Prêt</th>
 						</tr>
 					</thead>
 					<tbody>
