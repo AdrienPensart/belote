@@ -98,6 +98,7 @@ angular.module('meltdownApp', [])
           const readyCount = users.filter(u => u.ready).length;
           return {name:fullTable.table.name,id: fullTable.table.id,panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams:fullTable.teams};
         });
+        vm.tables.sort((a, b) => (b.inThatTable ? 1 : 0) - (a.inThatTable ? 1 : 0));
         vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables[0].users.findIndex((user) => user.pseudo === elem) !== -1);
       });
     };

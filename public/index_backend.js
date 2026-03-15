@@ -33,7 +33,6 @@ angular.module('meltdownAdmin', [])
   })
   .controller('AdminCtrl', ['$http', '$timeout', '$scope', function ($http, $timeout, $scope) {
     const vm = this;
-    vm.tables = [];
     vm.username = '';
     vm.pseudosSelected = [];
     vm.tables = [];
