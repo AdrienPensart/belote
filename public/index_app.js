@@ -1,40 +1,40 @@
 angular.module('meltdownApp', [])
   .factory('myHttpInterceptor', function ($q) {
-        return {
-            'request': function(config) {
-              config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
-              return config;
-            },
-            // Optional method to handle successful responses
-            response: function (response) {
-                // Do something with the successful response
-                // For example, modify data, add properties, or log
-                return response; // Always return the response or a promise resolving to it
-            },
+    return {
+      'request': function (config) {
+        config.headers['Authorization'] = (localStorage.getItem('token') || '').trim();
+        return config;
+      },
+      // Optional method to handle successful responses
+      response: function (response) {
+        // Do something with the successful response
+        // For example, modify data, add properties, or log
+        return response; // Always return the response or a promise resolving to it
+      },
 
-            // Optional method to handle error responses
-            responseError: function (rejection) {
-                // Do something with the error response
-                // For example, display error messages, redirect to login, or retry
-                console.error('Error response intercepted:', rejection);
-                if (rejection.status === 401) {
-                  localStorage.removeItem('token');
-                  window.location.href='/login';
-                }
-                
-                return $q.reject(rejection); // Always return a rejected promise
-            }
-        };
+      // Optional method to handle error responses
+      responseError: function (rejection) {
+        // Do something with the error response
+        // For example, display error messages, redirect to login, or retry
+        console.error('Error response intercepted:', rejection);
+        if (rejection.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
+
+        return $q.reject(rejection); // Always return a rejected promise
+      }
+    };
   })
   .config(function ($httpProvider) {
-      $httpProvider.interceptors.push('myHttpInterceptor');
+    $httpProvider.interceptors.push('myHttpInterceptor');
   })
-  .controller('MainController', ['$http', '$timeout','$scope', function ($http, $timeout, $scope) {
+  .controller('MainController', ['$http', '$timeout', '$scope', function ($http, $timeout, $scope) {
     const vm = this;
     vm.username = (localStorage.getItem('username') || '').trim();
     vm.authToken = (localStorage.getItem('token') || '').trim();
     if (!vm.authToken) {
-      window.location.href='/login';
+      window.location.href = '/login';
     }
     if (vm.username) {
       vm.usernameInput = vm.username;
@@ -49,12 +49,12 @@ angular.module('meltdownApp', [])
         setTimeout(() => {
           localStorage.removeItem('username');
           localStorage.removeItem('token');
-          window.location.href='/';
+          window.location.href = '/';
         }, 500);
       });
     };
 
-    vm.finish = function (tableId,teamName) {
+    vm.finish = function (tableId, teamName) {
       if (window.confirm(`La team ${teamName} a gagné vous etes sur?`)) {
         $http.get(`/user/finish?tableId=${tableId}&winningTeam=${teamName}`).then((response) => {
           vm.refreshTables();
@@ -63,16 +63,16 @@ angular.module('meltdownApp', [])
     };
 
     vm.ready = function (ready) {
-      this.changeUserState({ready});
+      this.changeUserState({ ready });
     };
     vm.canPlayTarot = function (canPlayTarot) {
-      this.changeUserState({canPlayTarot});
+      this.changeUserState({ canPlayTarot });
     };
     vm.canPlayTwoTables = function (canPlayTwoTables) {
-      this.changeUserState({canPlayTwoTables});
+      this.changeUserState({ canPlayTwoTables });
     };
-    vm.changeUserState= function(body) {
-      $http.post('/user/changeUserState',body).then(() => {
+    vm.changeUserState = function (body) {
+      $http.post('/user/changeUserState', body).then(() => {
         vm.refreshTables();
       });
     }
@@ -96,9 +96,9 @@ angular.module('meltdownApp', [])
             vm.onTable = true;
           }
           const readyCount = users.filter(u => u.ready).length;
-          return {name:fullTable.table.name,id: fullTable.table.id,panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams:fullTable.teams};
+          return { name: fullTable.table.name, id: fullTable.table.id, panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams: fullTable.teams };
         });
-        vm.tables.sort((a, b) => (b.inThatTable ? 1 : 0) - (a.inThatTable ? 1 : 0));
+        vm.tables.sort((a, b) => (b.panama ? 1 : 0) - (a.panama ? 1 : 0) || (b.inThatTable ? 1 : 0) - (a.inThatTable ? 1 : 0));
         vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables[0].users.findIndex((user) => user.pseudo === elem) !== -1);
       });
     };
@@ -115,7 +115,7 @@ angular.module('meltdownApp', [])
     }
 
     vm.createTable = function (gameModeName) {
-      $http.post('/tables/manual',{gameModeName,pseudos: vm.pseudosSelected}).then(() => {
+      $http.post('/tables/manual', { gameModeName, pseudos: vm.pseudosSelected }).then(() => {
         vm.refreshTables();
       });
     }
@@ -125,25 +125,25 @@ angular.module('meltdownApp', [])
         clearInterval(vm.refreshTimerWebService);
       }
       vm.refreshTimerWebService = setInterval(vm.refreshTimer, 5000);
-				$http.get('/alarm').then((response) => {
-					vm.timer = response.data.secondsLeft;
-          if (vm.intervalRefreshTimer) {
-						clearInterval(vm.intervalRefreshTimer);
-					}
-          if (vm.timer > 0) {
-            vm.intervalRefreshTimer = setInterval(() => {
-              vm.timer = vm.timer-1;
-              if (vm.timer <=0) {
-                clearInterval(vm.intervalRefreshTimer);
-              }
-              $scope.$applyAsync();
-            }, 1000);
-          } else {
-						vm.refreshTables();
-					}
-          $scope.$applyAsync();
-				});
-		}
+      $http.get('/alarm').then((response) => {
+        vm.timer = response.data.secondsLeft;
+        if (vm.intervalRefreshTimer) {
+          clearInterval(vm.intervalRefreshTimer);
+        }
+        if (vm.timer > 0) {
+          vm.intervalRefreshTimer = setInterval(() => {
+            vm.timer = vm.timer - 1;
+            if (vm.timer <= 0) {
+              clearInterval(vm.intervalRefreshTimer);
+            }
+            $scope.$applyAsync();
+          }, 1000);
+        } else {
+          vm.refreshTables();
+        }
+        $scope.$applyAsync();
+      });
+    }
 
     vm.connectWebsocket = function () {
       const scheme = location.protocol === 'http:' ? 'ws://' : 'wss://';
@@ -179,8 +179,8 @@ angular.module('meltdownApp', [])
       vm.user = response.data;
       vm.refreshTimer();
       vm.refreshTables().then(() => {
-          vm.connectWebsocket();
+        vm.connectWebsocket();
       });
     });
   }
-]);
+  ]);
