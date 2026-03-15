@@ -5,6 +5,7 @@ import { lower, users } from '../db/schema'; // your schema file
 import { v4 as uuidv4 } from 'uuid';
 import { compare, hash } from 'bcrypt-ts';
 const saltRounds = 10;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export class UserService {
 	db: DrizzleSqliteDODatabase<any>;
@@ -16,6 +17,9 @@ export class UserService {
 		const pseudo = body.pseudo;
 		const password = body.password;
 		const email = body.email;
+		if (!EMAIL_REGEX.test(email)) {
+			return new Response('Email invalide', { status: 400 });
+		}
 		const userResult = await this.db
 			.select()
 			.from(users)
@@ -25,7 +29,7 @@ export class UserService {
 			.from(users)
 			.where(eq(lower(users.email), email.toLowerCase()));
 		if (userResult[0] || userResultMail[0]) {
-			return new Response('existing user', {
+			return new Response('Utilisateur existant', {
 				status: 401,
 			});
 		}
@@ -47,12 +51,16 @@ export class UserService {
 			})
 			.returning();
 
-		return new Response(Buffer.from(newToken).toString('base64'), {
+		let base64Token = Buffer.from(newToken).toString('base64');
+		return new Response(base64Token, {
 			status: 200,
+			headers: {
+				Authorization: base64Token,
+			},
 		});
 	}
 	async passwordChange(request: Request, pseudo: string, admin: boolean): Promise<Response> {
-		const badPasswordReponse = new Response('bad password', {
+		const badPasswordReponse = new Response('Mot de passe incorrect', {
 			status: 403,
 		});
 
@@ -64,7 +72,7 @@ export class UserService {
 			.where(eq(lower(users.pseudo), pseudo.toLowerCase()))
 			.get();
 		if (!userResult) {
-			return new Response('User not found', {
+			return new Response('Utilisateur non trouvé', {
 				status: 404,
 			});
 		}
@@ -107,7 +115,7 @@ export class UserService {
 	}
 	async validateToken(requestToken: string | undefined, admin: boolean = false): Promise<User | Response> {
 		if (!requestToken) {
-			return new Response('you need to login (no token provided)', {
+			return new Response('Vous devez vous connecter (aucun token fourni)', {
 				status: 401,
 			});
 		}
@@ -116,19 +124,19 @@ export class UserService {
 		const userResult = await this.db.select().from(users).where(eq(users.token, token)).get();
 
 		if (!userResult) {
-			return new Response(`user not found with token ${token}`, {
+			return new Response(`Utilisateur non trouvé avec le token ${token}`, {
 				status: 401,
 			});
 		}
 
 		if (!userResult.tokenValidity) {
-			return new Response('invalid token', {
+			return new Response('Token invalide', {
 				status: 401,
 			});
 		}
 
 		if (admin && !userResult.admin) {
-			return new Response('you are not admin', {
+			return new Response("Vous n'êtes pas administrateur", {
 				status: 403,
 			});
 		}
@@ -137,7 +145,7 @@ export class UserService {
 		const validity = new Date();
 		validity.setTime(userResult.tokenValidity);
 		if (isNaN(validity.getTime()) || validity.getTime() < now.getTime()) {
-			return new Response('you need to login (bad validity)', {
+			return new Response('Vous devez vous connecter (validité du token expirée)', {
 				status: 401,
 			});
 		}
@@ -236,6 +244,9 @@ export class UserService {
 		} = await request.json();
 		if (!body.pseudo || !body.email || !body.password) {
 			return new Response('missing required fields', { status: 400 });
+		}
+		if (!EMAIL_REGEX.test(body.email)) {
+			return new Response('invalid email', { status: 400 });
 		}
 
 		const existingPseudo = await this.db

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" ng-app="meltdownApp">
 	<head>
 		<meta charset="UTF-8" />
@@ -11,28 +11,33 @@
 	</head>
 	<body ng-controller="LoginCtrl as ctrl">
 		<form ng-submit="ctrl.auth()">
-            <h2>Connexion</h2>
+			<h2>Connexion</h2>
 			<label>Email / pseudo:</label>
 			<input type="text" ng-model="ctrl.email" placeholder="Ton ostie d'email ou pseudo" required />
-            <label>Mot de passe:</label>
+			<label>Mot de passe:</label>
 			<input type="password" ng-model="ctrl.password" placeholder="Ton ostie de mot de passe" required />
-            
-            <h2 class="error" ng-if="ctrl.loginError">Verify your credentials</h2>
+
+			<h2 class="error" ng-if="ctrl.loginError">Verify your credentials</h2>
 			<button type="submit" ng-disabled="!ctrl.email || !ctrl.password">Je me connecte a la secte</button>
 		</form>
 
-        <form ng-submit="ctrl.createAccount()">
-            <h2>Creation de compte</h2>
+		<form ng-submit="ctrl.createAccount()">
+			<h2>Creation de compte</h2>
 			<label>Email:</label>
 			<input type="text" ng-model="ctrl.newAccountEmail" placeholder="Ton ostie d'email" required />
 			<label>Pseudo:</label>
 			<input type="text" ng-model="ctrl.newAccountPseudo" placeholder="Ton ostie de pseudo" required />
-            <label>Mot de passe:</label>
+			<label>Mot de passe:</label>
 			<input type="password" ng-model="ctrl.passwordOne" placeholder="Ton ostie de mot de passe" required />
-            <input type="password" ng-model="ctrl.passwordTwo" placeholder="Securité de tu n'as pas fait d'osti de calisse de marde" required />
-            <h2 class="error" ng-if="ctrl.accountCreationError">Pseudo used</h2>
-			<button type="submit" ng-disabled="!ctrl.newAccountPseudo || !ctrl.passwordOne || !ctrl.passwordTwo || ctrl.passwordTwo != ctrl.passwordOne">Je rejoins la secte</button>
-			<h2 class="error" ng-if="ctrl.creationError">Existing account</h2>
+			<input type="password" ng-model="ctrl.passwordTwo" placeholder="Securité de tu n'as pas fait d'osti de calisse de marde" required />
+			<h2 class="error" ng-if="ctrl.accountCreationError">Pseudo used</h2>
+			<button
+				type="submit"
+				ng-disabled="!ctrl.newAccountPseudo || !ctrl.passwordOne || !ctrl.passwordTwo || ctrl.passwordTwo != ctrl.passwordOne"
+			>
+				Je rejoins la secte
+			</button>
+			<h2 class="error" ng-if="ctrl.creationError">{{ctrl.creationError}}</h2>
 		</form>
-</body>
+	</body>
 </html>

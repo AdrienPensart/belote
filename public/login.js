@@ -10,7 +10,7 @@ angular.module('meltdownApp', [])
       $http({
         method: 'POST',
         url: '/auth',
-        data: {email: vm.email.trim(), password: vm.password},
+        data: { email: vm.email.trim(), password: vm.password },
         headers: {
           'Accept': 'text/plain',
           'Content-Type': 'text/plain'
@@ -21,7 +21,7 @@ angular.module('meltdownApp', [])
         localStorage.setItem('email', vm.email.trim());
         localStorage.setItem('token', response.headers('Authorization'));
         vm.loginError = false;
-        window.location.href='/';
+        window.location.href = '/';
       }).catch((error) => {
         vm.loginError = true;
       });
@@ -30,7 +30,7 @@ angular.module('meltdownApp', [])
       $http({
         method: 'POST',
         url: '/createAccount',
-        data: {pseudo: vm.newAccountPseudo.trim(), password: vm.passwordTwo, email: vm.newAccountEmail.trim()},
+        data: { pseudo: vm.newAccountPseudo.trim(), password: vm.passwordTwo, email: vm.newAccountEmail.trim() },
         headers: {
           'Accept': 'text/plain',
           'Content-Type': 'text/plain'
@@ -41,9 +41,9 @@ angular.module('meltdownApp', [])
         localStorage.setItem('username', vm.newAccountPseudo.trim());
         localStorage.setItem('token', response.headers('Authorization'));
         vm.creationError = false;
-        window.location.href='/';
+        window.location.href = '/';
       }).catch((error) => {
-        vm.creationError = true;
+        vm.creationError = (error.data && typeof error.data === 'string') ? error.data : 'Erreur inconnue';
       });
     };
   }]);
