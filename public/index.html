@@ -15,16 +15,27 @@
 				Tirage automatique des tables dans {{ctrl.getTimerRendering(ctrl.timer)}}
 			</h1>
 		</div>
-		<div class="button_container" ng-if="!ctrl.onTable">
-			<button class="secondary_background" ng-click="ctrl.quit()">Quitter Meltdown ({{ctrl.user.pseudo}})</button>
-			<button class="secondary_background" ng-click="ctrl.ready(true)">Je suis prêt!</button>
-			<button class="secondary_background" ng-click="ctrl.ready(false)">PAS Prêt!</button>
-			<button class="secondary_background" ng-click="ctrl.canPlayTarot(true)">Tarot! (si 5)</button>
-			<button class="secondary_background" ng-click="ctrl.canPlayTarot(false)">Pas de tarot! (si 5)</button>
-			<button class="secondary_background" ng-click="ctrl.canPlayTwoTables(true)">Deux tables! j'suis capable</button>
-			<button class="secondary_background" ng-click="ctrl.canPlayTwoTables(false)">Deux tables! j'suis pas capable</button>
-			<button class="secondary_background" ng-click="ctrl.createTable('Belote')">Creer Table Belote</button>
-			<button class="secondary_background" ng-click="ctrl.createTable('Coinche')">Creer Table Coinche</button>
+		<div ng-if="!ctrl.onTable">
+			<div class="button_container">
+				<button class="secondary_background" ng-click="ctrl.quit()">Quitter Meltdown ({{ctrl.user.pseudo}})</button>
+			</div>
+			<div class="button_container">
+				<label class="checkbox-toggle"
+					><input type="checkbox" ng-checked="ctrl.user.ready" ng-click="ctrl.ready(!ctrl.user.ready)" /> Prêt</label
+				>
+				<label class="checkbox-toggle"
+					><input type="checkbox" ng-checked="ctrl.user.canPlayTarot" ng-click="ctrl.canPlayTarot(!ctrl.user.canPlayTarot)" /> Tarot (si
+					5)</label
+				>
+				<label class="checkbox-toggle"
+					><input type="checkbox" ng-checked="ctrl.user.canPlayTwoTables" ng-click="ctrl.canPlayTwoTables(!ctrl.user.canPlayTwoTables)" />
+					Deux tables</label
+				>
+			</div>
+			<div class="button_container">
+				<button class="secondary_background" ng-click="ctrl.createTable('Belote')">Creer Table Belote</button>
+				<button class="secondary_background" ng-click="ctrl.createTable('Coinche')">Creer Table Coinche</button>
+			</div>
 		</div>
 
 		<br />

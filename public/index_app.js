@@ -103,6 +103,15 @@ angular.module('meltdownApp', [])
         });
         vm.tables.sort((a, b) => (b.panama ? 1 : 0) - (a.panama ? 1 : 0) || (b.inThatTable ? 1 : 0) - (a.inThatTable ? 1 : 0));
         vm.onTable = newOnTable;
+        var panamaTable = vm.tables.find(function (t) { return t.panama; });
+        if (panamaTable) {
+          var me = panamaTable.users.find(function (u) { return u.pseudo === vm.user.pseudo; });
+          if (me) {
+            vm.user.ready = me.ready;
+            vm.user.canPlayTarot = me.canPlayTarot;
+            vm.user.canPlayTwoTables = me.canPlayTwoTables;
+          }
+        }
         vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables[0].users.findIndex((user) => user.pseudo === elem) !== -1);
       });
     };
