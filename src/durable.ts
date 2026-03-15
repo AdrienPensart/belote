@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { AlarmEvent, FullTable, GameHistory, GameMode, Stat, User } from './db/schema.types';
-import { drizzle, type DrizzleSqliteDODatabase } from "drizzle-orm/durable-sqlite";
+import { drizzle, type DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
 import { GameService } from './services/GameService';
 import { UserService } from './services/UserService';
 import { migrate } from 'drizzle-orm/durable-sqlite/migrator';
@@ -12,13 +12,13 @@ const REPEAT_ALARM_TIMER = 3600000;
 export class MyDurableObject extends DurableObject<Env> {
 	sessions: Sessions;
 	storage: DurableObjectStorage;
-  	db: DrizzleSqliteDODatabase<any>;
+	db: DrizzleSqliteDODatabase<any>;
 	gameService: GameService;
 	userService: UserService;
 	constructor(ctx: DurableObjectState, env: Env) {
 		super(ctx, env);
 		this.storage = ctx.storage;
-    	this.db = drizzle(this.storage, { schema, logger: false });
+		this.db = drizzle(this.storage, { schema, logger: false });
 		this.sessions = new Map<WebSocket, { [key: string]: string }>();
 		this.gameService = new GameService(this.db);
 		this.userService = new UserService(this.db);
@@ -34,7 +34,7 @@ export class MyDurableObject extends DurableObject<Env> {
 		await migrate(this.db, migrations);
 	}
 
-	async getStats(user: User) : Promise<Stat[]> {
+	async getStats(user: User): Promise<Stat[]> {
 		return await this.gameService.getStats(user);
 	}
 
@@ -54,8 +54,12 @@ export class MyDurableObject extends DurableObject<Env> {
 		return await this.userService.adminDeleteUser(userId);
 	}
 
-	async passwordChange(request: Request, pseudo:string, admin: boolean): Promise<Response> {
-		return this.userService.passwordChange(request, pseudo,admin);
+	async adminGenerateToken(userId: number) {
+		return await this.userService.adminGenerateToken(userId);
+	}
+
+	async passwordChange(request: Request, pseudo: string, admin: boolean): Promise<Response> {
+		return this.userService.passwordChange(request, pseudo, admin);
 	}
 	async createAccount(request: Request): Promise<Response> {
 		return this.userService.createAccount(request);
@@ -64,14 +68,14 @@ export class MyDurableObject extends DurableObject<Env> {
 		const user = await this.userService.authenticate(request);
 		if (!user) {
 			return new Response('you need to login (authentication)', {
-            	status: 401,
-        	});
+				status: 401,
+			});
 		}
 		await this.gameService.addUserToTable(user, (await this.gameService.getPanamaTable()).table.id);
 		const token = Buffer.from(user.token!!).toString('base64');
 		const response = new Response(token, {
-            status: 200,
-        });
+			status: 200,
+		});
 		response.headers.set('Authorization', token);
 		return response;
 	}
@@ -86,7 +90,7 @@ export class MyDurableObject extends DurableObject<Env> {
 		return await this.gameService.getGameModes();
 	}
 	async createManualTable(pseudos: string[], gameMode: GameMode) {
-		return await this.gameService.createManualTable(pseudos,gameMode);
+		return await this.gameService.createManualTable(pseudos, gameMode);
 	}
 	async quit(pseudo: string) {
 		const userId = await this.userService.quit(pseudo);
@@ -101,9 +105,9 @@ export class MyDurableObject extends DurableObject<Env> {
 
 	// for admin exclusively
 	async addTimer(request: Request) {
-		const body: {minutes: number} = await request.json();
+		const body: { minutes: number } = await request.json();
 		const triggerAt = Date.now() + body.minutes * 60 * 1000;
-		await this.ctx.storage.put("timerGameLaunchScheduledAt", triggerAt);
+		await this.ctx.storage.put('timerGameLaunchScheduledAt', triggerAt);
 		await this.scheduleEvent('timerGameLaunch', triggerAt);
 	}
 
@@ -116,29 +120,29 @@ export class MyDurableObject extends DurableObject<Env> {
 	}
 
 	async timeLeftUntilAlarm(): Promise<number> {
-		const events: Map<string,AlarmEvent> = await this.ctx.storage.list({ prefix: "event:" });
+		const events: Map<string, AlarmEvent> = await this.ctx.storage.list({ prefix: 'event:' });
 		if (events.get('event:repeatTimer1Hour') === undefined) {
-			await this.scheduleEvent('repeatTimer1Hour', Date.now()+REPEAT_ALARM_TIMER, REPEAT_ALARM_TIMER);
+			await this.scheduleEvent('repeatTimer1Hour', Date.now() + REPEAT_ALARM_TIMER, REPEAT_ALARM_TIMER);
 		}
-		const timerScheduledAt = await this.ctx.storage.get<number>("timerGameLaunchScheduledAt");
+		const timerScheduledAt = await this.ctx.storage.get<number>('timerGameLaunchScheduledAt');
 
-		if (!timerScheduledAt) return -1;             // no alarm set
+		if (!timerScheduledAt) return -1; // no alarm set
 
 		const now = Date.now();
 		const msLeft = timerScheduledAt - now;
 
-		const secondsLeft = Math.max(0, Math.floor(msLeft / 1000));  
-  		return secondsLeft;
+		const secondsLeft = Math.max(0, Math.floor(msLeft / 1000));
+		return secondsLeft;
 	}
 
 	async removeTimer() {
 		await this.ctx.storage.delete(`event:timerGameLaunch`);
-		await this.ctx.storage.delete("timerGameLaunchScheduledAt");
+		await this.ctx.storage.delete('timerGameLaunchScheduledAt');
 	}
 
 	async alarm() {
 		const now = Date.now();
-		const events: Map<string,AlarmEvent> = await this.ctx.storage.list({ prefix: "event:" });
+		const events: Map<string, AlarmEvent> = await this.ctx.storage.list({ prefix: 'event:' });
 		let nextAlarm = null;
 
 		for (const [key, event] of events) {
@@ -161,24 +165,24 @@ export class MyDurableObject extends DurableObject<Env> {
 	}
 	async processEvent(event: AlarmEvent) {
 		console.log(`Processing event ${event.id}`);
-		switch(event.id) {
+		switch (event.id) {
 			case 'timer':
 				await this.adminGenerateTables();
-				await this.ctx.storage.delete("timerGameLaunchScheduledAt");
+				await this.ctx.storage.delete('timerGameLaunchScheduledAt');
 				break;
 			case 'repeatTimer1Hour':
 				await this.gameService.removeDisconnectedUsers();
 				break;
 		}
-  	}
-	async getUserList(){
+	}
+	async getUserList() {
 		return await this.userService.getUserList();
 	}
 
-	async getFullUserList(){
+	async getFullUserList() {
 		return await this.userService.adminGetFullUserList();
 	}
-	
+
 	async adminGenerateTables() {
 		await this.gameService.generateTables();
 	}

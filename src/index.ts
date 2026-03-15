@@ -106,10 +106,10 @@ export default {
 				}
 				try {
 					await stub.createManualTable(body.pseudos, gameMode!!);
-				} catch(e) {
+				} catch (e) {
 					return new Response(JSON.stringify({ message: 'table users not all in panama' }), { status: 400 });
 				}
-				
+
 				await stub.notifyAll(`tables generated`);
 				return new Response('ok', { status: 200 });
 			}
@@ -153,6 +153,17 @@ export default {
 				}
 				return await stub.adminDeleteUser(userId);
 			}
+			case '/admin/users/generateToken': {
+				const userIdParam = url.searchParams.get('userId');
+				if (!userIdParam) {
+					return new Response(JSON.stringify({ message: 'missing userId' }), { status: 400 });
+				}
+				const userId = parseInt(userIdParam);
+				if (Number.isNaN(userId)) {
+					return new Response(JSON.stringify({ message: 'invalid userId' }), { status: 400 });
+				}
+				return await stub.adminGenerateToken(userId);
+			}
 			case '/admin/users': {
 				return new Response(JSON.stringify(await stub.getUserList()), { status: 200 });
 			}
@@ -193,7 +204,7 @@ export default {
 				return new Response('ok', { status: 200 });
 			}
 			case '/admin/tables/swap': {
-				const body: { pseudos: string[]} = await request.json();
+				const body: { pseudos: string[] } = await request.json();
 				if (body.pseudos.length !== 2) {
 					return new Response(JSON.stringify({ message: 'users length nok' }), { status: 400 });
 				}

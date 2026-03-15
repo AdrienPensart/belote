@@ -181,6 +181,12 @@ angular.module('meltdownAdmin', [])
       });
     };
 
+    vm.generateToken = function (user) {
+      $http.post('/admin/users/generateToken?userId=' + encodeURIComponent(user.id)).then((resp) => {
+        user.generatedToken = resp.data.token;
+      });
+    };
+
     vm.formatTimestamp = function (value) {
       if (!value) return '-';
       const date = new Date(value);
