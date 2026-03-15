@@ -125,6 +125,34 @@ export default {
 				await stub.removeTimer();
 				await stub.notifyAll(`Removed alarm`);
 			}
+			case '/admin/users/full': {
+				return new Response(JSON.stringify(await stub.getFullUserList()), { status: 200 });
+			}
+			case '/admin/users/create': {
+				return await stub.adminCreateUser(request);
+			}
+			case '/admin/users/update': {
+				const userIdParam = url.searchParams.get('userId');
+				if (!userIdParam) {
+					return new Response(JSON.stringify({ message: 'missing userId' }), { status: 400 });
+				}
+				const userId = parseInt(userIdParam);
+				if (Number.isNaN(userId)) {
+					return new Response(JSON.stringify({ message: 'invalid userId' }), { status: 400 });
+				}
+				return await stub.adminUpdateUser(request, userId);
+			}
+			case '/admin/users/delete': {
+				const userIdParam = url.searchParams.get('userId');
+				if (!userIdParam) {
+					return new Response(JSON.stringify({ message: 'missing userId' }), { status: 400 });
+				}
+				const userId = parseInt(userIdParam);
+				if (Number.isNaN(userId)) {
+					return new Response(JSON.stringify({ message: 'invalid userId' }), { status: 400 });
+				}
+				return await stub.adminDeleteUser(userId);
+			}
 			case '/admin/users': {
 				return new Response(JSON.stringify(await stub.getUserList()), { status: 200 });
 			}

@@ -16,7 +16,7 @@
 		"eslint": "^9.39.1",
 		"typescript": "^5.5.2",
 		"vitest": "~3.2.0",
-		"wrangler": "^4.60.0"
+		"wrangler": "^4.71.0"
 	},
 	"dependencies": {
 		"bcrypt-ts": "^7.1.0",

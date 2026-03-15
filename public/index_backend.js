@@ -37,6 +37,8 @@ angular.module('meltdownAdmin', [])
     vm.username = '';
     vm.pseudosSelected = [];
     vm.tables = [];
+    vm.users = [];
+    vm.newUser = { pseudo: '', email: '', password: '', admin: false, ready: false, canPlayTarot: false, canPlayTwoTables: false };
     vm.authToken = (localStorage.getItem('token') || '').trim();
     vm.timer = -1;
     if (!vm.authToken) {
@@ -141,6 +143,51 @@ angular.module('meltdownAdmin', [])
         })
     };
 
+    vm.loadUsers = function () {
+      return $http.get('/admin/users/full').then((resp) => {
+        vm.users = resp.data.map((user) => ({ ...user, newPassword: '' }));
+      });
+    };
+
+    vm.createUser = function () {
+      const payload = { ...vm.newUser };
+      $http.post('/admin/users/create', payload).then(() => {
+        vm.newUser = { pseudo: '', email: '', password: '', admin: false, ready: false, canPlayTarot: false, canPlayTwoTables: false };
+        vm.loadUsers();
+      });
+    };
+
+    vm.saveUser = function (user) {
+      const payload = {
+        pseudo: user.pseudo,
+        email: user.email,
+        admin: user.admin,
+        ready: user.ready,
+        canPlayTarot: user.canPlayTarot,
+        canPlayTwoTables: user.canPlayTwoTables,
+        newPassword: user.newPassword || undefined
+      };
+      $http.post('/admin/users/update?userId=' + encodeURIComponent(user.id), payload).then(() => {
+        user.newPassword = '';
+        vm.loadUsers();
+      });
+    };
+
+    vm.deleteUserAdmin = function (user) {
+      if (!window.confirm(`Supprimer ${user.pseudo} ?`)) {
+        return;
+      }
+      $http.delete('/admin/users/delete?userId=' + encodeURIComponent(user.id)).then(() => {
+        vm.loadUsers();
+      });
+    };
+
+    vm.formatTimestamp = function (value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      return isNaN(date.getTime()) ? '-' : date.toLocaleString();
+    };
+
     vm.toggleUser = function (userName, checked) {
       if (checked) {
         if (!vm.pseudosSelected.includes(userName)) {
@@ -158,6 +205,7 @@ angular.module('meltdownAdmin', [])
       vm.refreshTables().then(() => {
         vm.connectWebsocket();
       });
+      vm.loadUsers();
     });
 
     vm.refreshTimer = function () {

@@ -1,5 +1,5 @@
 import { User } from '../db/schema.types';
-import { eq, or } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import { DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
 import { lower, users } from "../db/schema"; // your schema file
 import { v4 as uuidv4 } from 'uuid';
@@ -109,13 +109,11 @@ export class UserService {
     
         return userResult;
     }
-    async validateToken(requestToken: string | undefined, admin: Boolean = false): Promise<User | Response> {
-        const mustLoginResponse = new Response('you need to login', {
-            status: 401,
-        });
-    
+    async validateToken(requestToken: string | undefined, admin: boolean = false): Promise<User | Response> {
         if (!requestToken) {
-            return mustLoginResponse;
+            return new Response('you need to login (no token provided)', {
+                status: 401,
+            });
         }
         
         const token = Buffer.from(requestToken, 'base64').toString();
@@ -124,19 +122,31 @@ export class UserService {
             .from(users)
             .where(eq(users.token, token)).get();
         
-        if (!userResult || !userResult.tokenValidity) {
-            return mustLoginResponse;
+        if (!userResult) {
+            return new Response(`user not found with token ${token}`, {
+                status: 401,
+            });
         }
+
+        if (!userResult.tokenValidity) {
+            return new Response('invalid token', {
+                status: 401,
+            });
+        }
+
         if (admin && !userResult.admin) {
             return new Response('you are not admin', {
                 status: 403,
-            });;
+            });
         }
+
         const now = new Date();
         const validity = new Date();
         validity.setTime(userResult.tokenValidity);
         if (isNaN(validity.getTime()) || validity.getTime() < now.getTime()) {
-            return mustLoginResponse;
+            return new Response('you need to login (bad validity)', {
+                status: 401,
+            });
         }
 
         const tokenValidity = new Date();
@@ -180,6 +190,28 @@ export class UserService {
             return user.id;
         }
     }
+
+    async genMissingTokens() {
+        const missingTokenAdminUsers = await this.db
+            .select()
+            .from(users)
+            .where(and(eq(users.admin, true), isNull(users.token)));
+        
+        for await (const user of missingTokenAdminUsers) {
+                        let newToken = uuidv4();
+                        const tokenValidity = new Date();
+                        tokenValidity.setDate(tokenValidity.getDate() + 1);
+        
+                        await this.db.update(users)
+                        .set({ token: newToken, tokenValidity: tokenValidity.getTime() })
+                        .where(eq(users.id, user.id));
+        }
+
+        for await (const user of await this.adminGetFullUserList()) {
+            console.log(JSON.stringify(user));
+        }
+    }
+
     async getUserList() {
 		return await this.db
             .select({
@@ -188,4 +220,112 @@ export class UserService {
             })
             .from(users).all();
 	}
+
+    async adminGetFullUserList() {
+        return await this.db
+            .select()
+            .from(users)
+            .all();
+    }
+
+    async adminCreateUser(request: Request) {
+        const body: { pseudo?: string; email?: string; password?: string; admin?: boolean; ready?: boolean; canPlayTarot?: boolean; canPlayTwoTables?: boolean } = await request.json();
+        if (!body.pseudo || !body.email || !body.password) {
+            return new Response('missing required fields', { status: 400 });
+        }
+
+        const existingPseudo = await this.db
+            .select()
+            .from(users)
+            .where(eq(lower(users.pseudo), body.pseudo.toLowerCase()))
+            .get();
+        if (existingPseudo) {
+            return new Response('existing user', { status: 400 });
+        }
+
+        const existingEmail = await this.db
+            .select()
+            .from(users)
+            .where(eq(lower(users.email), body.email.toLowerCase()))
+            .get();
+        if (existingEmail) {
+            return new Response('existing email', { status: 400 });
+        }
+
+        await this.db
+            .insert(users)
+            .values({
+                pseudo: body.pseudo,
+                email: body.email,
+                password: await hash(body.password, saltRounds),
+                ready: body.ready ?? false,
+                admin: body.admin ?? false,
+                canPlayTarot: body.canPlayTarot ?? false,
+                canPlayTwoTables: body.canPlayTwoTables ?? false,
+                token: null,
+                tokenValidity: null,
+                lastActiveAt: null
+            })
+            .returning();
+
+        return new Response(JSON.stringify({ message: 'user created' }), { status: 200 });
+    }
+
+    async adminUpdateUser(request: Request, userId: number) {
+        const body: { pseudo?: string; email?: string; admin?: boolean; ready?: boolean; canPlayTarot?: boolean; canPlayTwoTables?: boolean; newPassword?: string } = await request.json();
+        const user = await this.db.select().from(users).where(eq(users.id, userId)).get();
+        if (!user) {
+            return new Response('user not found', { status: 404 });
+        }
+
+        if (body.pseudo && body.pseudo.toLowerCase() !== user.pseudo.toLowerCase()) {
+            const existingPseudo = await this.db
+                .select()
+                .from(users)
+                .where(eq(lower(users.pseudo), body.pseudo.toLowerCase()))
+                .get();
+            if (existingPseudo) {
+                return new Response('existing user', { status: 400 });
+            }
+        }
+
+        if (body.email && body.email.toLowerCase() !== user.email.toLowerCase()) {
+            const existingEmail = await this.db
+                .select()
+                .from(users)
+                .where(eq(lower(users.email), body.email.toLowerCase()))
+                .get();
+            if (existingEmail) {
+                return new Response('existing email', { status: 400 });
+            }
+        }
+
+        const updates: any = {};
+        if (body.pseudo !== undefined) updates.pseudo = body.pseudo;
+        if (body.email !== undefined) updates.email = body.email;
+        if (body.admin !== undefined) updates.admin = body.admin;
+        if (body.ready !== undefined) updates.ready = body.ready;
+        if (body.canPlayTarot !== undefined) updates.canPlayTarot = body.canPlayTarot;
+        if (body.canPlayTwoTables !== undefined) updates.canPlayTwoTables = body.canPlayTwoTables;
+        if (body.newPassword) {
+            updates.password = await hash(body.newPassword, saltRounds);
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return new Response(JSON.stringify({ message: 'nothing to update' }), { status: 200 });
+        }
+
+        await this.db.update(users).set(updates).where(eq(users.id, user.id));
+
+        return new Response(JSON.stringify({ message: 'user updated' }), { status: 200 });
+    }
+
+    async adminDeleteUser(userId: number) {
+        const user = await this.db.select().from(users).where(eq(users.id, userId)).get();
+        if (!user) {
+            return new Response('user not found', { status: 404 });
+        }
+        await this.db.delete(users).where(eq(users.id, userId));
+        return new Response(JSON.stringify({ message: 'user deleted' }), { status: 200 });
+    }
 }
