@@ -78,9 +78,9 @@ angular.module('meltdownApp', [])
     }
 
     vm.refreshTables = function () {
-      vm.onTable = false;
       return $http.get('/tables').then((resp) => {
         const tablesData = resp.data;
+        let newOnTable = false;
         vm.tables = tablesData.map((fullTable) => {
           let users = [];
           for (var team of fullTable.teams) {
@@ -93,12 +93,13 @@ angular.module('meltdownApp', [])
           }
           let onThatTable = users.find((elem) => elem.pseudo === vm.user.pseudo) !== undefined;
           if (!fullTable.table.panama && onThatTable) {
-            vm.onTable = true;
+            newOnTable = true;
           }
           const readyCount = users.filter(u => u.ready).length;
           return { name: fullTable.table.name, id: fullTable.table.id, panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams: fullTable.teams };
         });
         vm.tables.sort((a, b) => (b.panama ? 1 : 0) - (a.panama ? 1 : 0) || (b.inThatTable ? 1 : 0) - (a.inThatTable ? 1 : 0));
+        vm.onTable = newOnTable;
         vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables[0].users.findIndex((user) => user.pseudo === elem) !== -1);
       });
     };
