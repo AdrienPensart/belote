@@ -145,6 +145,7 @@ angular.module('meltdownAdmin', [])
     vm.loadUsers = function () {
       return $http.get('/admin/users/full').then((resp) => {
         vm.users = resp.data.map((user) => ({ ...user, newPassword: '' }));
+        vm.users.sort((a, b) => a.pseudo.localeCompare(b.pseudo));
       });
     };
 
