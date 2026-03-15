@@ -372,8 +372,32 @@ button:disabled {
 .button_container_admin {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
-	margin-top: 10px;
+	gap: 6px;
+	margin-top: 6px;
+}
+
+.button_container_admin button,
+.button_container_admin a {
+	flex: none;
+	padding: 4px 10px;
+	font-size: 11px;
+}
+
+.admin-section {
+	max-width: 1200px;
+	margin: 8px auto;
+	padding: 8px 12px;
+	border: 1px solid var(--border-color, #2a3b4d);
+	border-radius: 8px;
+	background: var(--surface-dark, #0f172a);
+}
+
+.admin-section__title {
+	margin: 0 0 4px 0;
+	font-size: 13px;
+	color: var(--gold, #d4af37);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 

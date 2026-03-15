@@ -17,25 +17,41 @@
 			</h1>
 		</div>
 
-		<div class="button_container_admin">
-			<button class="secondary_background" type="button" ng-click="vm.clearTables()">Vider tables</button>
-			<button class="secondary_background" type="button" ng-click="vm.generateTables()">Distribuer Tables</button>
-			<button class="secondary_background" type="button" ng-click="vm.reshuffleTables()">Re-Mélanger Tables</button>
-			<button class="secondary_background" type="button" ng-click="vm.notifyAll()">Notifier tout le monde</button>
+		<div class="admin-section">
+			<h3 class="admin-section__title">Tables</h3>
+			<div class="button_container_admin">
+				<button class="secondary_background" type="button" ng-click="vm.clearTables()">Vider tables</button>
+				<button class="secondary_background" type="button" ng-click="vm.generateTables()">Distribuer Tables</button>
+				<button class="secondary_background" type="button" ng-click="vm.reshuffleTables()">Re-Mélanger Tables</button>
+			</div>
+			<div class="button_container_admin">
+				<button class="secondary_background" ng-click="vm.createTable('Belote')">Creer Table Belote</button>
+				<button class="secondary_background" ng-click="vm.createTable('Coinche')">Creer Table Coinche</button>
+			</div>
+			<div class="button_container_admin">
+				<button class="secondary_background" ng-click="vm.swapUsers()">Swap Users</button>
+			</div>
 		</div>
-		<div class="button_container_admin">
-			<button class="secondary_background" type="button" ng-click="vm.launchTimer(5)">Lancer timer 5 min</button>
-			<button class="secondary_background" type="button" ng-click="vm.launchTimer(10)">Lancer timer 10 min</button>
-			<button class="secondary_background" type="button" ng-click="vm.launchTimer(15)">Lancer timer 15 min</button>
-			<button class="secondary_background" type="button" ng-click="vm.removeTimer()">Supprimer timer</button>
+
+		<div class="admin-section">
+			<h3 class="admin-section__title">Timer</h3>
+			<div class="button_container_admin">
+				<button class="secondary_background" type="button" ng-click="vm.launchTimer(5)">Lancer timer 5 min</button>
+				<button class="secondary_background" type="button" ng-click="vm.launchTimer(10)">Lancer timer 10 min</button>
+				<button class="secondary_background" type="button" ng-click="vm.launchTimer(15)">Lancer timer 15 min</button>
+				<button class="secondary_background" type="button" ng-click="vm.removeTimer()">Supprimer timer</button>
+			</div>
 		</div>
-		<div class="button_container_admin">
-			<button class="secondary_background" ng-click="vm.swapUsers()">Swap Users</button>
+
+		<div class="admin-section">
+			<h3 class="admin-section__title">Autres</h3>
+			<div class="button_container_admin">
+				<button class="secondary_background" type="button" ng-click="vm.notifyAll()">Notifier tout le monde</button>
+				<button class="secondary_background" type="button" onclick="window.open('/users.html', '_blank')">Gestion des utilisateurs</button>
+				<button class="secondary_background" type="button" onclick="window.open('/', '_blank')">Frontend</button>
+			</div>
 		</div>
-		<div class="button_container_admin">
-			<button class="secondary_background" ng-click="vm.createTable('Belote')">Creer Table Belote</button>
-			<button class="secondary_background" ng-click="vm.createTable('Coinche')">Creer Table Coinche</button>
-		</div>
+
 		<div id="tables" ng-repeat="table in vm.tables">
 			<div class="table_ready_status">
 				<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
@@ -79,17 +95,5 @@
 				</tbody>
 			</table>
 		</div>
-
-		<div class="button_container_admin">
-			<a
-				href="/users.html"
-				target="_blank"
-				class="secondary_background"
-				style="display: inline-block; text-decoration: none; padding: 8px 16px; border-radius: 4px; text-align: center"
-				>Gestion des utilisateurs</a
-			>
-		</div>
-		<a href="/" target="_blank">Frontend</a>
-		<br />
 	</body>
 </html>
