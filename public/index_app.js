@@ -42,6 +42,7 @@ angular.module('meltdownApp', [])
     vm.pseudosSelected = [];
     vm.tables = [];
     vm.timer = -1;
+    vm.tablesLoaded = false;
 
     vm.quit = function () {
       $http.get('/user/quit').then(() => {
@@ -103,6 +104,7 @@ angular.module('meltdownApp', [])
         });
         vm.tables.sort((a, b) => (b.panama ? 1 : 0) - (a.panama ? 1 : 0) || (b.inThatTable ? 1 : 0) - (a.inThatTable ? 1 : 0));
         vm.onTable = newOnTable;
+        vm.tablesLoaded = true;
         var panamaTable = vm.tables.find(function (t) { return t.panama; });
         if (panamaTable) {
           var me = panamaTable.users.find(function (u) { return u.pseudo === vm.user.pseudo; });
