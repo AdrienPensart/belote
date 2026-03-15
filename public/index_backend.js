@@ -187,6 +187,12 @@ angular.module('meltdownAdmin', [])
       });
     };
 
+    vm.addUserToPanama = function (user) {
+      $http.post('/admin/users/addToPanama?userId=' + encodeURIComponent(user.id)).then(() => {
+        vm.refreshTables();
+      });
+    };
+
     vm.formatTimestamp = function (value) {
       if (!value) return '-';
       const date = new Date(value);

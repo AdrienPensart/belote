@@ -164,6 +164,19 @@ export default {
 				}
 				return await stub.adminGenerateToken(userId);
 			}
+			case '/admin/users/addToPanama': {
+				const userIdParam = url.searchParams.get('userId');
+				if (!userIdParam) {
+					return new Response(JSON.stringify({ message: 'missing userId' }), { status: 400 });
+				}
+				const userId = parseInt(userIdParam);
+				if (Number.isNaN(userId)) {
+					return new Response(JSON.stringify({ message: 'invalid userId' }), { status: 400 });
+				}
+				const resp = await stub.adminAddUserToPanama(userId);
+				await stub.notifyAll('user added to panama');
+				return resp;
+			}
 			case '/admin/users': {
 				return new Response(JSON.stringify(await stub.getUserList()), { status: 200 });
 			}

@@ -58,6 +58,15 @@ export class MyDurableObject extends DurableObject<Env> {
 		return await this.userService.adminGenerateToken(userId);
 	}
 
+	async adminAddUserToPanama(userId: number) {
+		const user = await this.userService.getUserById(userId);
+		if (!user) {
+			return new Response('user not found', { status: 404 });
+		}
+		await this.gameService.addUserToTable(user, (await this.gameService.getPanamaTable()).table.id);
+		return new Response(JSON.stringify({ message: 'user added to panama' }), { status: 200 });
+	}
+
 	async passwordChange(request: Request, pseudo: string, admin: boolean): Promise<Response> {
 		return this.userService.passwordChange(request, pseudo, admin);
 	}

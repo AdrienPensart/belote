@@ -62,6 +62,7 @@
 								<button class="secondary_background" type="button" ng-click="vm.saveUser(user)">Sauver</button>
 								<button class="secondary_background" type="button" ng-click="vm.deleteUserAdmin(user)">Supprimer</button>
 								<button class="secondary_background" type="button" ng-click="vm.generateToken(user)">Générer token</button>
+								<button class="secondary_background" type="button" ng-click="vm.addUserToPanama(user)">Panama</button>
 								<span ng-if="user.generatedToken" class="generated-token">
 									<input type="text" readonly ng-value="user.generatedToken" ng-click="$event.target.select()" />
 								</span>

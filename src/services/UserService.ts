@@ -220,6 +220,10 @@ export class UserService {
 		return await this.db.select().from(users).all();
 	}
 
+	async getUserById(userId: number) {
+		return await this.db.select().from(users).where(eq(users.id, userId)).get();
+	}
+
 	async adminCreateUser(request: Request) {
 		const body: {
 			pseudo?: string;
