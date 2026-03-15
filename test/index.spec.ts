@@ -33,7 +33,7 @@ describe('Get frontend', () => {
 	// });
 });
 
-function basicUser(name: string) : User {
+function basicUser(name: string): User {
 	return {
 		pseudo: name,
 		id: -1,
@@ -41,7 +41,6 @@ function basicUser(name: string) : User {
 		canPlayTarot: false,
 		canPlayTwoTables: false,
 		admin: false,
-		lastActiveAt: null,
 		password: null,
 		token: null,
 		tokenValidity: null,
@@ -72,22 +71,22 @@ function readyPlayerTwoTables(name: string): User {
 function getGameModes(): GameMode[] {
 	return [
 		{
-			id:1,
-			name: 'Panama'
+			id: 1,
+			name: 'Panama',
 		},
 		{
-			id:2,
-			name: 'Belote'
+			id: 2,
+			name: 'Belote',
 		},
 		{
-			id:3,
-			name: 'Belote a 6'
+			id: 3,
+			name: 'Belote a 6',
 		},
 		{
-			id:4,
-			name: 'Tarot'
+			id: 4,
+			name: 'Tarot',
 		},
-	]
+	];
 }
 
 describe('Get backend', () => {
@@ -100,349 +99,334 @@ describe('Get backend', () => {
 	});
 });
 
-
 describe('Table generation', () => {
 	it.each([
 		// Format: { players, tarotPlayers, twoTablesPlayers, expectedDefaultTable, expectedTables }
-		{ 
+		{
 			desc: '0 player',
-			players: 0, 
-			tarotPlayers: 0, 
+			players: 0,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
-			expectedTables: [
-				{ name: DEFAULT_TABLE, size: 0 }
-			],
-			mustHavePlayerOnTwoTables: false
+			expectedTables: [{ name: DEFAULT_TABLE, size: 0 }],
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '1 players',
-			players: 1, 
-			tarotPlayers: 0, 
+			players: 1,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
-			expectedTables: [
-				{ name: DEFAULT_TABLE, size: 1 }
-			],
-			mustHavePlayerOnTwoTables: false
+			expectedTables: [{ name: DEFAULT_TABLE, size: 1 }],
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '2 players',
-			players: 2, 
-			tarotPlayers: 0, 
+			players: 2,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
-			expectedTables: [
-				{ name: DEFAULT_TABLE, size: 2 }
-			],
-			mustHavePlayerOnTwoTables: false
+			expectedTables: [{ name: DEFAULT_TABLE, size: 2 }],
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '3 players',
-			players: 3, 
-			tarotPlayers: 0, 
+			players: 3,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
-			expectedTables: [
-				{ name: DEFAULT_TABLE, size: 3 }
-			],
-			mustHavePlayerOnTwoTables: false
+			expectedTables: [{ name: DEFAULT_TABLE, size: 3 }],
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '4 players',
-			players: 4, 
-			tarotPlayers: 0, 
+			players: 4,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
-				{ name: 'Table 1', size: 4 }
+				{ name: 'Table 1', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '4 players WITH 4 who knows Tarot',
-			players: 4, 
-			tarotPlayers: 4, 
+			players: 4,
+			tarotPlayers: 4,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
-				{ name: 'Table 1', size: 4 }
+				{ name: 'Table 1', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '5 players',
-			players: 5, 
-			tarotPlayers: 0, 
+			players: 5,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 1 },
-				{ name: 'Table 1', size: 4 }
+				{ name: 'Table 1', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '5 players WHO knows Tarot (1 regular)',
-			players: 5, 
-			tarotPlayers: 4, 
+			players: 5,
+			tarotPlayers: 4,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 1 },
-				{ name: 'Table 1', size: 4 }
+				{ name: 'Table 1', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '5 players WHO knows Tarot (all)',
-			players: 5, 
-			tarotPlayers: 5, 
+			players: 5,
+			tarotPlayers: 5,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
-				{ name: 'Table 1', size: 5 }
+				{ name: 'Table 1', size: 5 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '6 players',
-			players: 6, 
-			tarotPlayers: 0, 
+			players: 6,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
-				{ name: 'Table 1', size: 6 }
+				{ name: 'Table 1', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '7 players WITHOUT any player on 2 tables',
-			players: 7, 
-			tarotPlayers: 0, 
+			players: 7,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 1 },
-				{ name: 'Table 1', size: 6 }
+				{ name: 'Table 1', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '7 players WITH 1 player who KNOWS how to play on 2 tables',
-			players: 7, 
-			tarotPlayers: 0, 
+			players: 7,
+			tarotPlayers: 0,
 			twoTablesPlayers: 1,
 			mustHavePlayerOnTwoTable: true,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
-				{ name: 'Table 1 (Table de 7)', size: 4 }, 
-				{ name: 'Table 2 (Table de 7)', size: 4 }
+				{ name: 'Table 1 (Table de 7)', size: 4 },
+				{ name: 'Table 2 (Table de 7)', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '7 players WITH 2 player who KNOWS how to play on 2 tables',
-			players: 7, 
-			tarotPlayers: 0, 
+			players: 7,
+			tarotPlayers: 0,
 			twoTablesPlayers: 2,
 			mustHavePlayerOnTwoTable: true,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
-				{ name: 'Table 1 (Table de 7)', size: 4 }, 
-				{ name: 'Table 2 (Table de 7)', size: 4 }
+				{ name: 'Table 1 (Table de 7)', size: 4 },
+				{ name: 'Table 2 (Table de 7)', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '8 players',
-			players: 8, 
-			tarotPlayers: 0, 
+			players: 8,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1', size: 4 },
-				{ name: 'Table 2', size: 4 }
+				{ name: 'Table 2', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '9 players',
-			players: 9, 
-			tarotPlayers: 0, 
+			players: 9,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 1 },
 				{ name: 'Table 1', size: 4 },
-				{ name: 'Table 2', size: 4 }
+				{ name: 'Table 2', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '9 players WITH 5 who knows Tarot',
-			players: 9, 
-			tarotPlayers: 5, 
+			players: 9,
+			tarotPlayers: 5,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1', size: 5 },
-				{ name: 'Table 2', size: 4 }
+				{ name: 'Table 2', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '10 players',
-			players: 10, 
-			tarotPlayers: 0, 
+			players: 10,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1', size: 4 },
-				{ name: 'Table 2', size: 6 }
+				{ name: 'Table 2', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '11 players',
-			players: 11, 
-			tarotPlayers: 0, 
+			players: 11,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 1 },
 				{ name: 'Table 1', size: 4 },
-				{ name: 'Table 2', size: 6 }
+				{ name: 'Table 2', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '11 players WITH 1 player who KNOWS how to play on 2 tables',
-			players: 11, 
-			tarotPlayers: 0, 
+			players: 11,
+			tarotPlayers: 0,
 			twoTablesPlayers: 1,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1 (Table de 7)', size: 4 },
 				{ name: 'Table 2 (Table de 7)', size: 4 },
-				{ name: 'Table 3', size: 4 }
+				{ name: 'Table 3', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '11 players WITH 2 player who KNOWS how to play on 2 tables',
-			players: 11, 
-			tarotPlayers: 0, 
+			players: 11,
+			tarotPlayers: 0,
 			twoTablesPlayers: 2,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1 (Table de 7)', size: 4 },
 				{ name: 'Table 2 (Table de 7)', size: 4 },
-				{ name: 'Table 3', size: 4 }
+				{ name: 'Table 3', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '11 players WITH 1 player who KNOWS how to play on 2 tables + 5 who KNOWS Tarot',
-			players: 11, 
-			tarotPlayers: 5, 
+			players: 11,
+			tarotPlayers: 5,
 			twoTablesPlayers: 1,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1 (Table de 7)', size: 4 },
 				{ name: 'Table 2 (Table de 7)', size: 4 },
-				{ name: 'Table 3', size: 4 }
+				{ name: 'Table 3', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '11 players WITH 2 player who KNOWS how to play on 2 tables + 5 who KNOWS Tarot',
-			players: 11, 
-			tarotPlayers: 5, 
+			players: 11,
+			tarotPlayers: 5,
 			twoTablesPlayers: 2,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1 (Table de 7)', size: 4 },
 				{ name: 'Table 2 (Table de 7)', size: 4 },
-				{ name: 'Table 3', size: 4 }
+				{ name: 'Table 3', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '11 players WITH 5 who KNOWS Tarot',
-			players: 11, 
-			tarotPlayers: 5, 
+			players: 11,
+			tarotPlayers: 5,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1', size: 5 },
-				{ name: 'Table 2', size: 6 }
+				{ name: 'Table 2', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '12 players',
-			players: 12, 
-			tarotPlayers: 0, 
+			players: 12,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1', size: 4 },
 				{ name: 'Table 2', size: 4 },
-				{ name: 'Table 3', size: 4 }
+				{ name: 'Table 3', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '13 players',
-			players: 13, 
-			tarotPlayers: 0, 
+			players: 13,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 1 },
 				{ name: 'Table 1', size: 4 },
 				{ name: 'Table 2', size: 4 },
-				{ name: 'Table 3', size: 4 }
+				{ name: 'Table 3', size: 4 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-		{ 
+		{
 			desc: '13 players WITH 1 player who KNOWS how to play on 2 tables',
-			players: 13, 
-			tarotPlayers: 0, 
+			players: 13,
+			tarotPlayers: 0,
 			twoTablesPlayers: 1,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1 (Table de 7)', size: 4 },
 				{ name: 'Table 2 (Table de 7)', size: 4 },
-				{ name: 'Table 3', size: 6 }
+				{ name: 'Table 3', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '13 players WITH 2 player who KNOWS how to play on 2 tables',
-			players: 13, 
-			tarotPlayers: 0, 
+			players: 13,
+			tarotPlayers: 0,
 			twoTablesPlayers: 2,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1 (Table de 7)', size: 4 },
 				{ name: 'Table 2 (Table de 7)', size: 4 },
-				{ name: 'Table 3', size: 6 }
+				{ name: 'Table 3', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: true
+			mustHavePlayerOnTwoTables: true,
 		},
-		{ 
+		{
 			desc: '14 players',
-			players: 14, 
-			tarotPlayers: 0, 
+			players: 14,
+			tarotPlayers: 0,
 			twoTablesPlayers: 0,
 			expectedTables: [
 				{ name: DEFAULT_TABLE, size: 0 },
 				{ name: 'Table 1', size: 4 },
 				{ name: 'Table 2', size: 4 },
-				{ name: 'Table 3', size: 6 }
+				{ name: 'Table 3', size: 6 },
 			],
-			mustHavePlayerOnTwoTables: false
+			mustHavePlayerOnTwoTables: false,
 		},
-	])('$desc', async ({ 
-		players, 
-		tarotPlayers, 
-		twoTablesPlayers, 
-		expectedTables,
-		mustHavePlayerOnTwoTables
-	}) => {
+	])('$desc', async ({ players, tarotPlayers, twoTablesPlayers, expectedTables, mustHavePlayerOnTwoTables }) => {
 		// Generate players dynamically
 		const allPlayers = [];
 		const playersOnTwoTables = [];
@@ -450,67 +434,68 @@ describe('Table generation', () => {
 		for (let i = 1; i <= tarotPlayers; i++) {
 			allPlayers.push(readyPlayerTarot(`tarot player (${i})`));
 		}
-		
+
 		for (let i = 1; i <= twoTablesPlayers; i++) {
-			let player = readyPlayerTwoTables(`player on two tables (${i})`)
+			let player = readyPlayerTwoTables(`player on two tables (${i})`);
 			playersOnTwoTables.push(player);
 			allPlayers.push(player);
 		}
-		
+
 		const regularPlayers = players - tarotPlayers - twoTablesPlayers;
 		for (let i = 1; i <= regularPlayers; i++) {
 			allPlayers.push(readyPlayer(`player ${i}`));
 		}
-		
+
 		// Generate the table
-		const tables: FullTable[]= [
+		const tables: FullTable[] = [
 			{
-				table:{
+				table: {
 					gamemodeId: 1,
 					id: 1,
 					finished: false,
 					panama: true,
-					name: 'Panama'
+					name: 'Panama',
 				},
-				teams: [{
-					name: TEAMS[0],
-					users: allPlayers
-				}]
-			}
-		]
+				teams: [
+					{
+						name: TEAMS[0],
+						users: allPlayers,
+					},
+				],
+			},
+		];
 		generateFullTables(tables, getGameModes());
 
 		let panamaTable = tables.find((fullTable) => fullTable.table.panama);
 
 		expect(panamaTable).toBeDefined();
-		
-		expectedTables.forEach(table => {
+
+		expectedTables.forEach((table) => {
 			let foundTable = tables.find((elem) => elem.table.name.trim() === table.name.trim());
 			expect(foundTable).toBeDefined();
-			expect(foundTable?.teams.reduce((acc: number,current) => acc + current.users.length,0)).eq(table.size);
+			expect(foundTable?.teams.reduce((acc: number, current) => acc + current.users.length, 0)).eq(table.size);
 		});
 
 		let totalPlayers = 0;
-		tables.forEach(table => {
-			table.teams.forEach(team => {
+		tables.forEach((table) => {
+			table.teams.forEach((team) => {
 				totalPlayers += team.users.length;
 			});
 		});
-		
 
 		if (mustHavePlayerOnTwoTables) {
 			let isPlayerPlayingOnTwoTables = false;
 			for (const player of playersOnTwoTables) {
 				let numberOfOccurencesOfPlayer = 0;
-				tables.forEach(table => {
-					table.teams.forEach(team => {
-						numberOfOccurencesOfPlayer+= team.users.filter((playerInTable) => playerInTable.pseudo === player.pseudo).length;
+				tables.forEach((table) => {
+					table.teams.forEach((team) => {
+						numberOfOccurencesOfPlayer += team.users.filter((playerInTable) => playerInTable.pseudo === player.pseudo).length;
 					});
 				});
 				isPlayerPlayingOnTwoTables = isPlayerPlayingOnTwoTables || numberOfOccurencesOfPlayer == 2;
 			}
 			expect(isPlayerPlayingOnTwoTables).toBeTruthy();
-			expect(totalPlayers).toBe(allPlayers.length+1);
+			expect(totalPlayers).toBe(allPlayers.length + 1);
 		} else {
 			expect(totalPlayers).toBe(allPlayers.length);
 		}

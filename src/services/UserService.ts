@@ -268,7 +268,6 @@ export class UserService {
 				canPlayTwoTables: body.canPlayTwoTables ?? false,
 				token: null,
 				tokenValidity: null,
-				lastActiveAt: null,
 			})
 			.returning();
 

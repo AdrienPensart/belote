@@ -42,7 +42,6 @@
 							<th>Tarot</th>
 							<th>Deux tables</th>
 							<th>Validité token</th>
-							<th>Dernière activité</th>
 							<th>Nouveau mot de passe</th>
 							<th>Actions</th>
 						</tr>
@@ -56,7 +55,6 @@
 							<td class="center"><input type="checkbox" ng-model="user.canPlayTarot" /></td>
 							<td class="center"><input type="checkbox" ng-model="user.canPlayTwoTables" /></td>
 							<td>{{vm.formatTimestamp(user.tokenValidity)}}</td>
-							<td>{{vm.formatTimestamp(user.lastActiveAt)}}</td>
 							<td><input type="password" ng-model="user.newPassword" placeholder="Ne pas changer" /></td>
 							<td class="admin-actions">
 								<button class="secondary_background" type="button" ng-click="vm.saveUser(user)">Sauver</button>
