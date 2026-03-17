@@ -61,13 +61,13 @@
 									ng-checked="ctrl.pseudosSelected.indexOf(user.pseudo)!== -1"
 								/>
 							</td>
-							<td ng-class="{'username_cell': user.pseudo == ctrl.user.pseudo}">
+							<td ng-style="{ color: user.team }" ng-class="{'username_cell': user.pseudo == ctrl.user.pseudo}">
 								{{user.pseudo}}<span ng-if="user.pseudo == ctrl.user.pseudo"> (you)</span>
 							</td>
 							<td ng-if="table.panama">{{user.canPlayTarot ? '✅' : '❌'}}</td>
 							<td ng-if="table.panama">{{user.canPlayTwoTables ? '✅' : '❌'}}</td>
 							<td ng-if="table.panama">{{user.ready ? '✅' : '❌'}}</td>
-							<td ng-if="!table.panama">
+							<td ng-if="!table.panama && table.inThatTable">
 								<button ng-click="ctrl.finish(table.id,user.team)">
 									Equipe <span ng-style="{ color: user.team }">{{user.team}}</span> gagnante!
 								</button>
