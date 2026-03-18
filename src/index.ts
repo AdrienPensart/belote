@@ -26,7 +26,7 @@ export default {
 			return response;
 		}
 		if (url.pathname === '/createAccount') {
-			let response = stub.createAccount(request);
+			let response = await stub.createAccount(request);
 			await stub.notifyAll(`user connected!`);
 			return response;
 		}

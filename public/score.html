@@ -24,7 +24,7 @@
 
 			<div ng-if="!ctrl.loadingTableStatus && ctrl.isOnTable">
 				<!-- Game Mode Selection -->
-				<div class="form" style="max-width: 500px">
+				<div class="form" style="width: 100%; max-width: 500px">
 					<h2 style="margin-top: 0; font-size: 1.1em">Mode de jeu</h2>
 					<div class="game-mode-buttons">
 						<button ng-click="ctrl.setGameMode('belote')" ng-class="{'active': ctrl.gameMode === 'belote'}">Belote Classique</button>
@@ -33,7 +33,7 @@
 				</div>
 
 				<!-- Score Input Form -->
-				<div class="form score-form" style="max-width: 700px">
+				<div class="form score-form" style="width: 100%; max-width: 700px">
 					<h2>Nouvelle Manche</h2>
 
 					<!-- Contract Info -->
@@ -133,7 +133,7 @@
 				</div>
 
 				<!-- Score Table -->
-				<div class="form score-table-container" style="max-width: 700px" ng-if="ctrl.rounds.length > 0">
+				<div class="form score-table-container" style="width: 100%; max-width: 700px" ng-if="ctrl.rounds.length > 0">
 					<h2>Tableau des Scores</h2>
 					<table class="score-table tables">
 						<thead>
@@ -185,7 +185,7 @@
 				</div>
 
 				<!-- Rules Reference -->
-				<div class="form rules-reference" style="max-width: 700px">
+				<div class="form rules-reference" style="width: 100%; max-width: 700px">
 					<h2>📖 Rappel des Règles</h2>
 					<div class="rules-content">
 						<div class="rule-item"><strong>Points totaux par manche:</strong> 162 points (sans bonus)</div>

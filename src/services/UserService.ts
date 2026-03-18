@@ -12,7 +12,7 @@ export class UserService {
 	constructor(db: DrizzleSqliteDODatabase<any>) {
 		this.db = db;
 	}
-	async createAccount(request: Request): Promise<Response> {
+	async createAccount(request: Request): Promise<User | Response> {
 		const body: { pseudo: string; password: string; email: string } = await request.json();
 		const pseudo = body.pseudo;
 		const password = body.password;
@@ -38,12 +38,12 @@ export class UserService {
 		const tokenValidity = new Date();
 		tokenValidity.setDate(tokenValidity.getDate() + 1);
 
-		await this.db
+		const [newUser] = await this.db
 			.insert(users)
 			.values({
 				pseudo,
 				email,
-				password: await hash(password, saltRounds), // store plain password only for testing!
+				password: await hash(password, saltRounds),
 				ready: false,
 				admin: false,
 				token: newToken,
@@ -51,13 +51,7 @@ export class UserService {
 			})
 			.returning();
 
-		let base64Token = Buffer.from(newToken).toString('base64');
-		return new Response(base64Token, {
-			status: 200,
-			headers: {
-				Authorization: base64Token,
-			},
-		});
+		return newUser;
 	}
 	async passwordChange(request: Request, pseudo: string, admin: boolean): Promise<Response> {
 		const badPasswordReponse = new Response('Mot de passe incorrect', {

@@ -614,6 +614,57 @@ a:hover {
 	}
 }
 
+@media (max-width: 480px) {
+	body {
+		padding: 4px;
+	}
+
+	.button_container,
+	.button_container_admin {
+		gap: 6px;
+		padding: 0 4px;
+	}
+
+	.button_container button,
+	.button_container_admin button {
+		font-size: 11px;
+		padding: 6px 10px;
+	}
+
+	.table_ready_status {
+		font-size: 11px;
+		padding: 6px 8px;
+	}
+
+	th,
+	td {
+		padding: 4px 6px;
+		font-size: 10px;
+	}
+
+	.admin-section__title {
+		font-size: 14px;
+	}
+
+	.links-container {
+		padding: 8px 4px;
+	}
+
+	.links-container a {
+		font-size: 11px;
+		margin-right: 10px;
+	}
+
+	#tables {
+		padding: 0 4px;
+	}
+
+	.checkbox-toggle {
+		font-size: 10px;
+		padding: 6px 10px;
+	}
+}
+
 .error {
 	color: red;
 	font-size: 13px;

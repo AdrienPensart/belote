@@ -75,7 +75,17 @@ export class MyDurableObject extends DurableObject<Env> {
 		return this.userService.passwordChange(request, pseudo, admin);
 	}
 	async createAccount(request: Request): Promise<Response> {
-		return this.userService.createAccount(request);
+		const result = await this.userService.createAccount(request);
+		if (result instanceof Response) {
+			return result;
+		}
+		await this.gameService.addUserToTable(result, (await this.gameService.getPanamaTable()).table.id);
+		const token = Buffer.from(result.token!!).toString('base64');
+		const response = new Response(token, {
+			status: 200,
+		});
+		response.headers.set('Authorization', token);
+		return response;
 	}
 	async authenticate(request: Request): Promise<Response> {
 		const user = await this.userService.authenticate(request);
