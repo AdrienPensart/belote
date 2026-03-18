@@ -40,6 +40,7 @@ angular.module('meltdownAdmin', [])
     vm.newUser = { pseudo: '', email: '', password: '', admin: false, ready: false, canPlayTarot: false, canPlayTwoTables: false };
     vm.authToken = (localStorage.getItem('token') || '').trim();
     vm.timer = -1;
+    vm.tablesLoaded = false;
     if (!vm.authToken) {
       window.location.href = '/login';
     }
@@ -64,6 +65,7 @@ angular.module('meltdownAdmin', [])
           return { name: fullTable.table.name, id: fullTable.table.id, panama: fullTable.table.panama, users: users, readyCount, teams: fullTable.teams };
         });
         vm.pseudosSelected = vm.pseudosSelected.filter((elem) => vm.tables.findIndex((table) => table.users.findIndex((user) => user.pseudo === elem) !== -1) !== -1);
+        vm.tablesLoaded = true;
       });
     };
 

@@ -10,11 +10,9 @@
 		<script src="index_backend.js"></script>
 	</head>
 
-	<body class="backend" ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm">
-		<div class="button_container_admin">
-			<h1 ng-show="vm.timer>0" style="margin: 16px auto; font-size: 1.2em">
-				Tirage automatique des tables dans {{vm.getTimerRendering(vm.timer)}}
-			</h1>
+	<body class="backend" ng-app="meltdownAdmin" ng-controller="AdminCtrl as vm" ng-cloak>
+		<div ng-show="vm.timer>0" class="button_container_admin">
+			<h1 style="margin: 16px auto; font-size: 1.2em">Tirage automatique des tables dans {{vm.getTimerRendering(vm.timer)}}</h1>
 		</div>
 
 		<div class="admin-section">
@@ -52,7 +50,7 @@
 			</div>
 		</div>
 
-		<div id="tables" ng-repeat="table in vm.tables">
+		<div id="tables" ng-if="vm.tablesLoaded" ng-repeat="table in vm.tables">
 			<div class="table_ready_status">
 				<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
 				<button ng-click="vm.changeReadyState(table.id, true)">Prêt</button>

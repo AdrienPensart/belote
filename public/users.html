@@ -16,11 +16,50 @@
 				<h2>Gestion des utilisateurs</h2>
 				<p>Créer, éditer ou supprimer des comptes (admin requis).</p>
 			</div>
+
+			<div class="admin-card">
+				<h3>Utilisateurs existants ({{vm.users.length}})</h3>
+				<table class="tables user-admin-table">
+					<thead>
+						<tr>
+							<th>Pseudo / Email</th>
+							<th>Options</th>
+							<th>Nouveau mot de passe</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="user in vm.users">
+							<td>
+								<input type="text" ng-model="user.pseudo" />
+								<br />
+								<input type="email" ng-model="user.email" />
+								<br />
+								{{vm.formatTimestamp(user.tokenValidity)}}
+							</td>
+							<td class="options-cell">
+								<label><input type="checkbox" ng-model="user.admin" />Admin?</label>
+								<label><input type="checkbox" ng-model="user.ready" />Prêt</label>
+								<label><input type="checkbox" ng-model="user.canPlayTarot" />Tarot</label>
+								<label><input type="checkbox" ng-model="user.canPlayTwoTables" />Deux tables</label>
+							</td>
+							<td><input type="password" ng-model="user.newPassword" placeholder="Ne pas changer" /></td>
+							<td class="admin-actions">
+								<button class="secondary_background" type="button" ng-click="vm.saveUser(user)">Sauver</button>
+								<button class="secondary_background" type="button" ng-click="vm.deleteUserAdmin(user)">Supprimer</button>
+								<button class="secondary_background" type="button" ng-click="vm.generateToken(user)">Générer token</button>
+								<button class="secondary_background" type="button" ng-click="vm.addUserToPanama(user)">Panama</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
 			<div class="admin-card">
 				<h3>Créer un utilisateur</h3>
 				<div class="admin-form-grid">
-					<label>Pseudo<input type="text" ng-model="vm.newUser.pseudo" placeholder="Pseudo" /></label>
-					<label>Email<input type="email" ng-model="vm.newUser.email" placeholder="Email" /></label>
+					<label class="full-width">Pseudo<input type="text" ng-model="vm.newUser.pseudo" placeholder="Pseudo" /></label>
+					<label class="full-width">Email<input type="email" ng-model="vm.newUser.email" placeholder="Email" /></label>
 					<label>Mot de passe<input type="password" ng-model="vm.newUser.password" placeholder="Mot de passe" /></label>
 					<label class="checkbox-inline"><input type="checkbox" ng-model="vm.newUser.admin" /> Admin</label>
 					<label class="checkbox-inline"><input type="checkbox" ng-model="vm.newUser.ready" /> Prêt</label>
@@ -29,57 +68,21 @@
 				</div>
 				<button class="secondary_background" type="button" ng-click="vm.createUser()">Créer</button>
 			</div>
-
-			<div class="admin-card">
-				<h3>Utilisateurs existants ({{vm.users.length}})</h3>
-				<table class="tables user-admin-table">
-					<thead>
-						<tr>
-							<th>Pseudo</th>
-							<th>Email</th>
-							<th>Admin</th>
-							<th>Prêt</th>
-							<th>Tarot</th>
-							<th>Deux tables</th>
-							<th>Validité token</th>
-							<th>Nouveau mot de passe</th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr ng-repeat="user in vm.users">
-							<td><input type="text" ng-model="user.pseudo" /></td>
-							<td><input type="email" ng-model="user.email" /></td>
-							<td class="center"><input type="checkbox" ng-model="user.admin" /></td>
-							<td class="center"><input type="checkbox" ng-model="user.ready" /></td>
-							<td class="center"><input type="checkbox" ng-model="user.canPlayTarot" /></td>
-							<td class="center"><input type="checkbox" ng-model="user.canPlayTwoTables" /></td>
-							<td>{{vm.formatTimestamp(user.tokenValidity)}}</td>
-							<td><input type="password" ng-model="user.newPassword" placeholder="Ne pas changer" /></td>
-							<td class="admin-actions">
-								<button class="secondary_background" type="button" ng-click="vm.saveUser(user)">Sauver</button>
-								<button class="secondary_background" type="button" ng-click="vm.deleteUserAdmin(user)">Supprimer</button>
-								<button class="secondary_background" type="button" ng-click="vm.generateToken(user)">Générer token</button>
-								<button class="secondary_background" type="button" ng-click="vm.addUserToPanama(user)">Panama</button>
-								<span ng-if="user.generatedToken" class="generated-token">
-									<input type="text" readonly ng-value="user.generatedToken" ng-click="$event.target.select()" />
-								</span>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
 		</div>
 		<a href="/backend.html">← Retour au backend</a>
 		<br />
 
 		<style>
 			.admin-users {
-				margin: 16px;
+				margin: 0;
 				padding: 12px;
 				background: var(--surface-dark, #0f172a);
 				border: 1px solid var(--border-color, #2a3b4d);
 				border-radius: 8px;
+				width: 100%;
+			}
+			.admin-card {
+				overflow-x: auto;
 			}
 			.admin-users__header h2 {
 				margin: 0 0 4px 0;
@@ -110,6 +113,9 @@
 				gap: 4px;
 				font-size: 12px;
 			}
+			.admin-form-grid .full-width {
+				grid-column: 1 / -1;
+			}
 			.checkbox-inline {
 				align-items: center;
 				flex-direction: row !important;
@@ -125,8 +131,26 @@
 			.user-admin-table td {
 				vertical-align: middle;
 			}
+			.options-cell {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 4px;
+			}
+			.options-cell label {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				white-space: nowrap;
+			}
+			.admin-actions {
+				display: flex;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 4px;
+			}
 			.admin-actions button {
-				margin-right: 6px;
+				width: 100%;
 			}
 			.generated-token input {
 				width: 220px;
@@ -135,6 +159,20 @@
 			}
 			.center {
 				text-align: center;
+			}
+			@media (max-width: 768px) {
+				.admin-users {
+					padding: 4px;
+					border: none;
+					border-radius: 0;
+				}
+				.admin-card {
+					padding: 4px;
+					border-radius: 4px;
+				}
+				.user-admin-table {
+					max-width: none;
+				}
 			}
 		</style>
 	</body>
