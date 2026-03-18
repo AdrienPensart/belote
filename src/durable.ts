@@ -206,6 +206,10 @@ export class MyDurableObject extends DurableObject<Env> {
 		return await this.userService.adminGetFullUserList();
 	}
 
+	async adminPreviewTables() {
+		return await this.gameService.previewTables();
+	}
+
 	async adminGenerateTables() {
 		await this.gameService.generateTables();
 	}

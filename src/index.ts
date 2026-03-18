@@ -246,6 +246,10 @@ export default {
 				await stub.notifyAll(`tables cleared`);
 				return new Response(JSON.stringify({ message: `🎉 Tables cleared` }), success);
 			}
+			case '/admin/tables/preview': {
+				const preview = await stub.adminPreviewTables();
+				return new Response(JSON.stringify(preview), success);
+			}
 			case '/admin/tables/generate': {
 				await stub.adminGenerateTables();
 				await stub.notifyAll(`tables generated`);

@@ -87,8 +87,24 @@ angular.module('meltdownAdmin', [])
     }
 
     vm.generateTables = function () {
-      $http.get('/admin/tables/generate')
-        .then(function () { vm.refreshTables(); })
+      $http.get('/admin/tables/preview').then(function (resp) {
+        var data = resp.data;
+        var preview = data.newTables;
+        var remaining = data.remainingPanamaUsers;
+        if (!preview || preview.length === 0) {
+          window.alert('Aucune table à distribuer (pas assez de joueurs prêts ?)');
+          return;
+        }
+        var tableSizes = preview.map(function (ft) {
+          var playerCount = ft.teams.reduce(function (acc, team) { return acc + team.users.length; }, 0);
+          return ft.table.name + ' : ' + playerCount + ' joueurs';
+        }).join('\n');
+        var message = preview.length + ' table(s) à distribuer :\n' + tableSizes + '\n\nJoueurs prêts restant en Panama : ' + remaining.length + '\n\nConfirmer la distribution ?';
+        if (window.confirm(message)) {
+          $http.get('/admin/tables/generate')
+            .then(function () { vm.refreshTables(); });
+        }
+      });
     };
 
     vm.reshuffleTables = function () {

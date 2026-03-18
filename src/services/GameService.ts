@@ -211,6 +211,16 @@ export class GameService {
 		}
 	}
 
+	public async previewTables(): Promise<{ newTables: FullTable[]; remainingPanamaUsers: User[] }> {
+		const tables = await this.getTables();
+		const tablesCopy: FullTable[] = JSON.parse(JSON.stringify(tables));
+		const gameModes = await this.getGameModes();
+		await generateFullTables(tablesCopy, gameModes);
+		const panama = tablesCopy.find((ft) => ft.table.panama);
+		const remainingPanamaUsers = panama ? panama.teams[0].users.filter((u) => u.ready) : [];
+		return { newTables: tablesCopy.filter((ft) => ft.table.id === -1), remainingPanamaUsers };
+	}
+
 	public async generateTables() {
 		let tables = await this.getTables();
 		let gameModes = await this.getGameModes();
