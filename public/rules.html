@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Meltdown - Règles de la Belote</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+	</head>
+	<body>
+		<div class="form" style="max-width: 700px; font-size: 13px">
+			<h2 style="color: var(--gold); margin-top: 0; font-size: 1.2em">🃏 Règles de la Belote</h2>
+
+			<h3 style="color: var(--gold)">1. Présentation</h3>
+			<p>
+				La belote est un jeu de cartes qui se joue à 4 joueurs, répartis en 2 équipes de 2. Les partenaires sont assis places en diagonale.
+				On utilise un jeu de 32 cartes (du 7 à l'As dans chaque couleur : Pique, Cœur, Carreau, Trèfle).
+			</p>
+
+			<h3 style="color: var(--gold)">2. Distribution des cartes</h3>
+			<p>Le donneur distribue les cartes en deux tours :</p>
+			<ul>
+				<li>Premier tour : 3 cartes à chaque joueur, puis 2 cartes à chaque joueur, ou l'inverse.</li>
+				<li>Une carte est retournée face visible au centre de la table. C'est la carte proposée à l'atout.</li>
+				<li>
+					Si un joueur prend, le donneur distribue les cartes restantes : 3 cartes à chacun (2 au preneur qui récupère aussi la carte
+					retournée).
+				</li>
+				<li>
+					Si personne ne prend au premier tour, un second tour permet de proposer une autre couleur d'atout (différente de la carte
+					retournée).
+				</li>
+				<li>Si personne ne prend au second tour, les cartes sont redistribuées par le joueur suivant.</li>
+			</ul>
+			<p>Chaque joueur a donc 8 cartes en main pour jouer la manche.</p>
+
+			<h3 style="color: var(--gold)">3. Ordre et valeur des cartes</h3>
+			<h4>À l'atout :</h4>
+			<table class="tables" style="max-width: 300px; margin-bottom: 10px">
+				<thead>
+					<tr>
+						<th>Carte</th>
+						<th>Points</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Valet</td>
+						<td>20</td>
+					</tr>
+					<tr>
+						<td>9</td>
+						<td>14</td>
+					</tr>
+					<tr>
+						<td>As</td>
+						<td>11</td>
+					</tr>
+					<tr>
+						<td>10</td>
+						<td>10</td>
+					</tr>
+					<tr>
+						<td>Roi</td>
+						<td>4</td>
+					</tr>
+					<tr>
+						<td>Dame</td>
+						<td>3</td>
+					</tr>
+					<tr>
+						<td>8</td>
+						<td>0</td>
+					</tr>
+					<tr>
+						<td>7</td>
+						<td>0</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>Ordre de force à l'atout : Valet &gt; 9 &gt; As &gt; 10 &gt; Roi &gt; Dame &gt; 8 &gt; 7</p>
+
+			<h4>Hors atout :</h4>
+			<table class="tables" style="max-width: 300px; margin-bottom: 10px">
+				<thead>
+					<tr>
+						<th>Carte</th>
+						<th>Points</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>As</td>
+						<td>11</td>
+					</tr>
+					<tr>
+						<td>10</td>
+						<td>10</td>
+					</tr>
+					<tr>
+						<td>Roi</td>
+						<td>4</td>
+					</tr>
+					<tr>
+						<td>Dame</td>
+						<td>3</td>
+					</tr>
+					<tr>
+						<td>Valet</td>
+						<td>2</td>
+					</tr>
+					<tr>
+						<td>9</td>
+						<td>0</td>
+					</tr>
+					<tr>
+						<td>8</td>
+						<td>0</td>
+					</tr>
+					<tr>
+						<td>7</td>
+						<td>0</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>Ordre de force hors atout : As &gt; 10 &gt; Roi &gt; Dame &gt; Valet &gt; 9 &gt; 8 &gt; 7</p>
+
+			<p>
+				Le total des points dans un jeu est de <strong>152 points</strong> (62 à l'atout + 90 hors atout). L'équipe qui remporte le dernier
+				pli gagne un bonus de <strong>10 points</strong>, appelé "Dix de der", portant le total à <strong>162 points</strong>.
+			</p>
+
+			<h3 style="color: var(--gold)">4. Déroulement du jeu</h3>
+			<p>Le joueur à gauche du donneur commence en jouant une carte. Les autres joueurs jouent à tour de rôle dans le sens horaire.</p>
+			<p>Règles obligatoires :</p>
+			<ul>
+				<li>
+					<strong>Fournir la couleur demandée :</strong> si un joueur possède une carte de la couleur jouée, il doit obligatoirement en
+					jouer une.
+				</li>
+				<li><strong>Couper :</strong> si un joueur ne possède pas la couleur demandée, il doit couper avec un atout (si possible).</li>
+				<li>
+					<strong>Monter à l'atout :</strong> si de l'atout a déjà été joué dans le pli, le joueur qui doit couper est obligé de jouer un
+					atout supérieur s'il en possède un. Sinon, il doit jouer un atout inférieur (sous-couper) s'il en possède un.
+				</li>
+				<li>
+					<strong>Exception partenaire :</strong> si le partenaire est maître du pli (il a joué la carte la plus forte), on n'est pas obligé
+					de monter à l'atout ni de couper, mais on doit tout de même fournir la couleur demandée si on la possède.
+				</li>
+				<li>
+					<strong>Défausser :</strong> si un joueur ne peut ni fournir la couleur ni couper, il peut se défausser de n'importe quelle carte.
+				</li>
+			</ul>
+			<p>
+				Le pli est remporté par la carte la plus forte dans la couleur d'atout si un atout a été joué, sinon par la carte la plus forte dans
+				la couleur d'entame. Le vainqueur du pli entame le pli suivant.
+			</p>
+
+			<h3 style="color: var(--gold)">5. Décompte des points</h3>
+			<p>À la fin des 8 plis :</p>
+			<ul>
+				<li>Chaque équipe compte les points des cartes remportées dans ses plis, plus éventuellement le bonus de 10 de der.</li>
+				<li>
+					L'équipe qui a pris (annoncé l'atout) doit réaliser au minimum <strong>82 points (92 points avec Belote-Rebelote)</strong> pour
+					remplir son contrat.
+				</li>
+				<li><strong>Contrat rempli :</strong> chaque équipe marque les points qu'elle a réalisés.</li>
+				<li>
+					<strong>Contrat chuté :</strong> si le preneur n'atteint pas 82 points (92 points avec Belote-Rebelote), l'équipe adverse marque
+					la totalité des 162 points. Le preneur marque 0.
+				</li>
+				<li>
+					<strong>Litige (81-81) :</strong> les points du preneur sont mis en attente. L'adversaire marque ses 81 points. Les 81 points en
+					litige seront attribués au vainqueur de la manche suivante.
+				</li>
+			</ul>
+
+			<h3 style="color: var(--gold)">6. Belote et Rebelote</h3>
+			<p>
+				Si un joueur possède le Roi et la Dame d'atout, il annonce <strong>"Belote"</strong> en jouant la première de ces deux cartes, puis
+				<strong>"Rebelote"</strong> en jouant la seconde. Cela rapporte un bonus de <strong>20 points</strong> à son équipe. Ce bonus est
+				<strong>toujours acquis</strong>, même si le contrat est chuté.
+			</p>
+			<p><strong>Cas particulier — Litige avec Belote-Rebelote :</strong> 71 points sont remis en jeu dans le litige.</p>
+
+			<h3 style="color: var(--gold)">7. Capot</h3>
+			<p>
+				Si une équipe remporte les 8 plis de la manche, elle réalise un <strong>capot</strong>. L'équipe qui fait capot marque
+				<strong>252 points</strong> (162 + 90 de bonus). L'équipe adverse marque <strong>0 point</strong>.
+			</p>
+
+			<h3 style="color: var(--gold)">8. Fin de la partie</h3>
+			<p>
+				La partie se joue en plusieurs manches. La première équipe à atteindre un total de <strong>1001 points</strong> (ou 501, selon la
+				convention choisie) remporte la partie. Si les deux équipes dépassent le score cible lors de la même manche, c'est l'équipe avec le
+				score le plus élevé qui gagne.
+			</p>
+
+			<h3 style="color: var(--gold)">9. Résumé rapide</h3>
+			<ul>
+				<li>4 joueurs, 2 équipes, 32 cartes.</li>
+				<li>8 cartes par joueur, 8 plis par manche.</li>
+				<li>Le preneur doit faire au moins 82 points (92 points avec Belote-Rebelote).</li>
+				<li>Total de 162 points par manche (dont 10 de der).</li>
+				<li>Belote-Rebelote = 20 points bonus.</li>
+				<li>Capot = 252 points.</li>
+				<li>Première équipe à 1001 points gagne.</li>
+			</ul>
+		</div>
+		<div class="links-container">
+			<a href="/">Index</a>
+			<a href="/score">Compteur de Points</a>
+			<a href="/stats">Stats</a>
+			<a href="/history">Historique</a>
+			<a href="/account">Mon Compte</a>
+			<a href="/help">Aide</a>
+			<a href="/valeurs.webp" target="_blank">Valeur des cartes</a>
+			<a href="https://github.com/AdrienPensart/belote" target="_blank">Code source</a>
+			<a href="https://github.com/AdrienPensart/belote/issues" target="_blank">Bug Tracker</a>
+		</div>
+	</body>
+</html>

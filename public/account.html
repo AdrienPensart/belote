@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" ng-app="meltdownApp">
 	<head>
 		<meta charset="UTF-8" />
@@ -10,25 +10,36 @@
 		<script src="account.js"></script>
 	</head>
 	<body ng-controller="AccountCtrl as ctrl">
-        <form ng-submit="ctrl.changeUserPassword()">
-            <h2>Changement de mot de passe</h2>
-            <label>Ancien mot de passe:</label>
+		<form ng-submit="ctrl.changeUserPassword()">
+			<h2>Changement de mot de passe</h2>
+			<label>Ancien mot de passe:</label>
 			<input type="password" ng-model="ctrl.oldPassword" placeholder="Ton ostie de mot de passe" required />
-            <label>Mot de passe:</label>
+			<label>Mot de passe:</label>
 			<input type="password" ng-model="ctrl.newPassword" placeholder="Ton ostie de nouveau mot de passe" required />
-            <input type="password" ng-model="ctrl.newPasswordTwo" placeholder="Securité de tu n'as pas fait d'osti de calisse de marde" required />
-            <h2 class="error" ng-if="ctrl.passwordChangeError">Bad old password</h2>
-			<button type="submit" ng-disabled="!ctrl.oldPassword || !ctrl.newPassword || !ctrl.newPasswordTwo || ctrl.newPassword != ctrl.newPasswordTwo">Je reset mon password</button>
+			<input
+				type="password"
+				ng-model="ctrl.newPasswordTwo"
+				placeholder="Securité de tu n'as pas fait d'osti de calisse de marde"
+				required
+			/>
+			<h2 class="error" ng-if="ctrl.passwordChangeError">Bad old password</h2>
+			<button
+				type="submit"
+				ng-disabled="!ctrl.oldPassword || !ctrl.newPassword || !ctrl.newPasswordTwo || ctrl.newPassword != ctrl.newPasswordTwo"
+			>
+				Je reset mon password
+			</button>
 		</form>
-        <form ng-submit="ctrl.resetUserPassword()" ng-if="ctrl.user.admin">
-            <h2>Changement de mot de passe d'un gars qui a perdu son mdp</h2>
+		<form ng-submit="ctrl.resetUserPassword()" ng-if="ctrl.user.admin">
+			<h2>Changement de mot de passe d'un gars qui a perdu son mdp</h2>
 			<input type="text" ng-model="ctrl.pseudo" placeholder="Pseudo du joueur" required />
-            <input type="password" ng-model="ctrl.newPassword" placeholder="Nouveau password du joueur" required />
-            <h2 class="error" ng-if="ctrl.userPasswordResetChangeError">Bad user pseudo</h2>
+			<input type="password" ng-model="ctrl.newPassword" placeholder="Nouveau password du joueur" required />
+			<h2 class="error" ng-if="ctrl.userPasswordResetChangeError">Bad user pseudo</h2>
 			<button type="submit" ng-disabled="!ctrl.pseudo">Je change le mdp de {{ctrl.pseudo}}</button>
 		</form>
-        <div class="links-container">
-            <a href="/">Index</a>
-        </div>
-    </body>
+		<div class="links-container">
+			<a href="/">Index</a>
+			<a href="/rules">Règles</a>
+		</div>
+	</body>
 </html>
