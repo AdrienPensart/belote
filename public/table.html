@@ -7,28 +7,86 @@
 		<link rel="stylesheet" href="/styles.css" />
 		<link rel="icon" type="image/png" href="/favicon.png" />
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-		<script src="score.js"></script>
+		<script src="table.js"></script>
 	</head>
-	<body ng-controller="ScoreCtrl as ctrl">
+	<body ng-controller="TableCtrl as ctrl" ng-cloak>
 		<div class="score-container">
 			<h1 class="page-title">🃏 Compteur de Points</h1>
 
-			<div class="status-banner" ng-if="ctrl.loadingTableStatus">
+			<div class="status-banner" ng-if="ctrl.showLoading">
 				<p>Chargement de ta table...</p>
 			</div>
 
-			<div class="status-banner" ng-if="!ctrl.loadingTableStatus && !ctrl.isOnTable">
+			<div class="status-banner" ng-if="!ctrl.loading && !ctrl.tableId">
 				<p>Tu n'es sur aucune table. Rejoins une table (hors panama) pour utiliser le compteur.</p>
 				<a class="status-link" href="/">Retour à l'accueil</a>
 			</div>
 
-			<div ng-if="!ctrl.loadingTableStatus && ctrl.isOnTable">
-				<!-- Game Mode Selection -->
+			<div ng-if="!ctrl.loading && ctrl.tableId">
+				<div class="status-banner" style="margin-bottom: 14px">
+					<strong>{{ctrl.tableName}}</strong>
+					— <span ng-style="{ color: ctrl.team1Name }">Team {{ctrl.team1Name}}</span>
+					<span class="team-players">({{ctrl.team1Players.join(', ')}})</span>
+					vs
+					<span ng-style="{ color: ctrl.team2Name }">Team {{ctrl.team2Name}}</span>
+					<span class="team-players">({{ctrl.team2Players.join(', ')}})</span>
+				</div>
+
+				<!-- Winner Banner -->
+				<div class="winner-banner" ng-if="ctrl.winnerTeam">
+					<h2>🏆 Team <span ng-style="{ color: ctrl.winnerTeam }">{{ctrl.winnerTeam}}</span> a atteint {{ctrl.pointsLimit}} points !</h2>
+					<button class="declare-winner-btn" ng-click="ctrl.declareWinner(ctrl.winnerTeam)">
+						Déclarer Team {{ctrl.winnerTeam}} vainqueur
+					</button>
+				</div>
+
+				<!-- Settings -->
 				<div class="form" style="width: 100%; max-width: 500px">
-					<h2 style="margin-top: 0; font-size: 1.1em">Mode de jeu</h2>
-					<div class="game-mode-buttons">
-						<button ng-click="ctrl.setGameMode('belote')" ng-class="{'active': ctrl.gameMode === 'belote'}">Belote Classique</button>
-						<button ng-click="ctrl.setGameMode('coinche')" ng-class="{'active': ctrl.gameMode === 'coinche'}">Coinche</button>
+					<h2 style="margin-top: 0; font-size: 1.1em">Paramètres</h2>
+					<div style="margin-bottom: 10px">
+						<label>Limite de Points</label>
+						<div class="game-mode-buttons" style="margin-top: 6px" ng-if="ctrl.scoringMode !== 'coinche'">
+							<button ng-click="ctrl.setPointsLimit(1001)" ng-class="{'active': ctrl.pointsLimit === 1001}">1001</button>
+							<button ng-click="ctrl.setPointsLimit(501)" ng-class="{'active': ctrl.pointsLimit === 501}">501</button>
+							<button ng-click="ctrl.setCustomLimit()" ng-class="{'active': ctrl.pointsLimit !== 1001 && ctrl.pointsLimit !== 501}">
+								Autre
+							</button>
+						</div>
+						<div class="game-mode-buttons" style="margin-top: 6px" ng-if="ctrl.scoringMode === 'coinche'">
+							<button ng-click="ctrl.setPointsLimit(2000)" ng-class="{'active': ctrl.pointsLimit === 2000}">2000</button>
+							<button ng-click="ctrl.setPointsLimit(3000)" ng-class="{'active': ctrl.pointsLimit === 3000}">3000</button>
+							<button ng-click="ctrl.setCustomLimit()" ng-class="{'active': ctrl.pointsLimit !== 2000 && ctrl.pointsLimit !== 3000}">
+								Autre
+							</button>
+						</div>
+						<div ng-if="ctrl.isCustomLimit()" style="margin-top: 8px; text-align: center">
+							<input
+								type="number"
+								ng-model="ctrl.customLimit"
+								ng-change="ctrl.setPointsLimit(ctrl.customLimit)"
+								min="100"
+								placeholder="Limite"
+								style="
+									width: 120px;
+									padding: 8px;
+									text-align: center;
+									background: var(--card-surface);
+									border: 1px solid var(--border-color);
+									border-radius: var(--border-radius-sm);
+									color: var(--text-primary);
+									font-size: 16px;
+								"
+							/>
+						</div>
+					</div>
+					<div>
+						<label>Mode de jeu</label>
+						<div class="game-mode-buttons" style="margin-top: 6px">
+							<button ng-click="ctrl.setScoringMode('belote')" ng-class="{'active': ctrl.scoringMode === 'belote'}">
+								Belote Classique
+							</button>
+							<button ng-click="ctrl.setScoringMode('coinche')" ng-class="{'active': ctrl.scoringMode === 'coinche'}">Coinche</button>
+						</div>
 					</div>
 				</div>
 
@@ -40,17 +98,27 @@
 					<div class="contract-section">
 						<label>Équipe Preneuse</label>
 						<div class="team-selector">
-							<button ng-click="ctrl.setContractTeam('nous')" ng-class="{'active': ctrl.contractTeam === 'nous'}" class="team-btn nous">
-								Nous
+							<button
+								ng-click="ctrl.setContractTeam(ctrl.team1Name)"
+								ng-class="{'active': ctrl.contractTeam === ctrl.team1Name}"
+								class="team-btn"
+								ng-style="ctrl.contractTeam === ctrl.team1Name ? {'background': 'linear-gradient(135deg, ' + ctrl.team1Name + ', ' + ctrl.team1Name + ')', 'border-color': ctrl.team1Name} : {}"
+							>
+								Team {{ctrl.team1Name}}
 							</button>
-							<button ng-click="ctrl.setContractTeam('eux')" ng-class="{'active': ctrl.contractTeam === 'eux'}" class="team-btn eux">
-								Eux
+							<button
+								ng-click="ctrl.setContractTeam(ctrl.team2Name)"
+								ng-class="{'active': ctrl.contractTeam === ctrl.team2Name}"
+								class="team-btn"
+								ng-style="ctrl.contractTeam === ctrl.team2Name ? {'background': 'linear-gradient(135deg, ' + ctrl.team2Name + ', ' + ctrl.team2Name + ')', 'border-color': ctrl.team2Name} : {}"
+							>
+								Team {{ctrl.team2Name}}
 							</button>
 						</div>
 					</div>
 
 					<!-- Coinche Contract Value -->
-					<div class="contract-value-section" ng-if="ctrl.gameMode === 'coinche'">
+					<div class="contract-value-section" ng-if="ctrl.scoringMode === 'coinche'">
 						<label>Contrat Annoncé</label>
 						<div class="contract-buttons">
 							<button
@@ -71,27 +139,27 @@
 					<!-- Points Input -->
 					<div class="points-input-section">
 						<div class="team-points">
-							<div class="team-column nous">
-								<h3>Nous</h3>
+							<div class="team-column team1">
+								<h3 ng-style="{ color: ctrl.team1Name }">Team {{ctrl.team1Name}}</h3>
 								<label>Points (0-162)</label>
-								<input type="number" ng-model="ctrl.pointsNous" ng-change="ctrl.syncPoints('nous')" min="0" max="162" placeholder="0" />
-								<div class="bonus-section">
-									<label class="checkbox-label">
-										<input type="checkbox" ng-model="ctrl.beloteNous" />
-										Belote/Rebelote (+20)
-									</label>
-								</div>
+								<input type="number" ng-model="ctrl.pointsTeam1" ng-change="ctrl.syncPoints('team1')" min="0" max="162" placeholder="0" />
 							</div>
-							<div class="team-column eux">
-								<h3>Eux</h3>
+							<div class="team-column team2">
+								<h3 ng-style="{ color: ctrl.team2Name }">Team {{ctrl.team2Name}}</h3>
 								<label>Points (0-162)</label>
-								<input type="number" ng-model="ctrl.pointsEux" ng-change="ctrl.syncPoints('eux')" min="0" max="162" placeholder="0" />
-								<div class="bonus-section">
-									<label class="checkbox-label">
-										<input type="checkbox" ng-model="ctrl.beloteEux" />
-										Belote/Rebelote (+20)
-									</label>
-								</div>
+								<input type="number" ng-model="ctrl.pointsTeam2" ng-change="ctrl.syncPoints('team2')" min="0" max="162" placeholder="0" />
+							</div>
+						</div>
+						<div class="belote-section">
+							<label>Belote / Rebelote (+20)</label>
+							<div class="special-buttons" style="margin-top: 6px">
+								<button ng-click="ctrl.setBelote(ctrl.team1Name)" ng-class="{'active': ctrl.beloteTeam === ctrl.team1Name}">
+									Team {{ctrl.team1Name}}
+								</button>
+								<button ng-click="ctrl.setBelote(ctrl.team2Name)" ng-class="{'active': ctrl.beloteTeam === ctrl.team2Name}">
+									Team {{ctrl.team2Name}}
+								</button>
+								<button ng-click="ctrl.setBelote(null)" ng-class="{'active': ctrl.beloteTeam === null}">Aucune</button>
 							</div>
 						</div>
 					</div>
@@ -100,8 +168,12 @@
 					<div class="special-cases">
 						<label>Cas Spéciaux</label>
 						<div class="special-buttons">
-							<button ng-click="ctrl.setCapot('nous')" ng-class="{'active': ctrl.capot === 'nous'}">Capot Nous</button>
-							<button ng-click="ctrl.setCapot('eux')" ng-class="{'active': ctrl.capot === 'eux'}">Capot Eux</button>
+							<button ng-click="ctrl.setCapot(ctrl.team1Name)" ng-class="{'active': ctrl.capot === ctrl.team1Name}">
+								Capot Team {{ctrl.team1Name}}
+							</button>
+							<button ng-click="ctrl.setCapot(ctrl.team2Name)" ng-class="{'active': ctrl.capot === ctrl.team2Name}">
+								Capot Team {{ctrl.team2Name}}
+							</button>
 							<button ng-click="ctrl.setCapot(null)" ng-class="{'active': ctrl.capot === null}">Pas de Capot</button>
 						</div>
 					</div>
@@ -110,17 +182,17 @@
 					<div class="result-preview" ng-if="ctrl.canCalculate()">
 						<h3>Résultat de la Manche</h3>
 						<div class="preview-scores">
-							<div class="preview-team nous">
-								<span class="team-name">Nous</span>
-								<span class="team-score" ng-class="{'winner': ctrl.getPreviewResult().nousWins}">
-									{{ctrl.getPreviewResult().nousScore}}
+							<div class="preview-team">
+								<span class="team-name" ng-style="{ color: ctrl.team1Name }">Team {{ctrl.team1Name}}</span>
+								<span class="team-score" ng-class="{'winner': ctrl.getPreviewResult().team1Wins}">
+									{{ctrl.getPreviewResult().team1Score}}
 								</span>
 							</div>
 							<div class="preview-vs">vs</div>
-							<div class="preview-team eux">
-								<span class="team-name">Eux</span>
-								<span class="team-score" ng-class="{'winner': !ctrl.getPreviewResult().nousWins}">
-									{{ctrl.getPreviewResult().euxScore}}
+							<div class="preview-team">
+								<span class="team-name" ng-style="{ color: ctrl.team2Name }">Team {{ctrl.team2Name}}</span>
+								<span class="team-score" ng-class="{'winner': !ctrl.getPreviewResult().team1Wins}">
+									{{ctrl.getPreviewResult().team2Score}}
 								</span>
 							</div>
 						</div>
@@ -140,8 +212,8 @@
 							<tr>
 								<th>Manche</th>
 								<th>Preneur</th>
-								<th class="nous">Nous</th>
-								<th class="eux">Eux</th>
+								<th ng-style="{ color: ctrl.team1Name }">{{ctrl.team1Name}}</th>
+								<th ng-style="{ color: ctrl.team2Name }">{{ctrl.team2Name}}</th>
 								<th>Résultat</th>
 								<th></th>
 							</tr>
@@ -150,62 +222,49 @@
 							<tr ng-repeat="round in ctrl.rounds">
 								<td>{{$index + 1}}</td>
 								<td>
-									<span ng-class="round.contractTeam">{{round.contractTeam === 'nous' ? 'Nous' : 'Eux'}}</span>
-									<span ng-if="ctrl.gameMode === 'coinche'"> ({{round.contractValue}})</span>
+									<span ng-style="{ color: round.contractTeam }">Team {{round.contractTeam}}</span>
+									<span ng-if="ctrl.scoringMode === 'coinche' && round.contractValue"> ({{round.contractValue}})</span>
 								</td>
-								<td class="nous">{{round.nousScore}}</td>
-								<td class="eux">{{round.euxScore}}</td>
+								<td ng-style="{ color: ctrl.team1Name }">{{round.scoreTeam1}}</td>
+								<td ng-style="{ color: ctrl.team2Name }">{{round.scoreTeam2}}</td>
 								<td>
 									<span ng-class="round.contractSuccess ? 'success-text' : 'failure-text'">
 										{{round.contractSuccess ? 'Contrat réussi' : 'Chute'}}
 									</span>
 								</td>
 								<td>
-									<button class="delete-btn" ng-click="ctrl.removeRound($index)">✕</button>
+									<button class="delete-btn" ng-click="ctrl.removeRound(round.id)">✕</button>
 								</td>
 							</tr>
 						</tbody>
 						<tfoot>
 							<tr class="total-row">
 								<td colspan="2"><strong>TOTAL</strong></td>
-								<td class="nous"><strong>{{ctrl.totalNous}}</strong></td>
-								<td class="eux"><strong>{{ctrl.totalEux}}</strong></td>
+								<td ng-style="{ color: ctrl.team1Name }"><strong>{{ctrl.totalTeam1}}</strong></td>
+								<td ng-style="{ color: ctrl.team2Name }"><strong>{{ctrl.totalTeam2}}</strong></td>
 								<td colspan="2">
-									<span ng-if="ctrl.totalNous > ctrl.totalEux" class="winner-text">Nous menons!</span>
-									<span ng-if="ctrl.totalEux > ctrl.totalNous" class="winner-text">Eux mènent!</span>
-									<span ng-if="ctrl.totalNous === ctrl.totalEux">Égalité</span>
+									<span ng-if="ctrl.totalTeam1 > ctrl.totalTeam2" class="winner-text">Team {{ctrl.team1Name}} mène!</span>
+									<span ng-if="ctrl.totalTeam2 > ctrl.totalTeam1" class="winner-text">Team {{ctrl.team2Name}} mène!</span>
+									<span ng-if="ctrl.totalTeam1 === ctrl.totalTeam2">Égalité</span>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="6" style="text-align: center; color: var(--text-muted); font-size: 12px">
+									Objectif : {{ctrl.pointsLimit}} points
 								</td>
 							</tr>
 						</tfoot>
 					</table>
 
 					<div class="table-actions">
-						<button class="secondary_background" ng-click="ctrl.resetGame()">Nouvelle Partie</button>
-					</div>
-				</div>
-
-				<!-- Rules Reference -->
-				<div class="form rules-reference" style="width: 100%; max-width: 700px">
-					<h2>📖 Rappel des Règles</h2>
-					<div class="rules-content">
-						<div class="rule-item"><strong>Points totaux par manche:</strong> 162 points (sans bonus)</div>
-						<div class="rule-item"><strong>Belote/Rebelote:</strong> +20 points (Roi + Dame d'atout annoncés)</div>
-						<div class="rule-item"><strong>Capot:</strong> 252 points (162 + 90 bonus) pour l'équipe qui fait toutes les levées</div>
-						<div class="rule-item">
-							<strong>Contrat réussi (Belote):</strong> L'équipe preneuse doit faire plus de points que l'adversaire
-						</div>
-						<div class="rule-item"><strong>Chute:</strong> L'équipe adverse marque tous les points (162 + bonus)</div>
-						<div class="rule-item" ng-if="ctrl.gameMode === 'coinche'">
-							<strong>Coinche:</strong> Les points sont multipliés (×2 coinché, ×4 surcoinché)
-						</div>
+						<button class="secondary_background" ng-click="ctrl.resetGame()">Réinitialiser les Scores</button>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="links-container">
+		<div class="links-container" ng-show="!ctrl.showLoading">
 			<a href="/">Index</a>
-			<a href="/score">Compteur de Points</a>
 			<a href="/stats">Stats</a>
 			<a href="/history">Historique</a>
 			<a href="/account">Mon Compte</a>
@@ -254,6 +313,11 @@
 				font-size: 1.1em;
 			}
 
+			.team-players {
+				font-size: 0.85em;
+				color: var(--text-muted);
+			}
+
 			.contract-section,
 			.contract-value-section,
 			.points-input-section,
@@ -272,14 +336,8 @@
 				flex: 1;
 			}
 
-			.team-btn.nous.active {
-				background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-				border-color: #60a5fa;
-			}
-
-			.team-btn.eux.active {
-				background: linear-gradient(135deg, var(--poker-red) 0%, var(--poker-red-dark) 100%);
-				border-color: var(--poker-red-light);
+			.team-btn.active {
+				border-color: var(--gold);
 			}
 
 			.contract-buttons {
@@ -323,14 +381,6 @@
 				margin-bottom: 6px;
 			}
 
-			.team-column.nous h3 {
-				color: #60a5fa;
-			}
-
-			.team-column.eux h3 {
-				color: var(--poker-red-light);
-			}
-
 			.team-column input[type='number'] {
 				width: 100%;
 				padding: 10px 12px;
@@ -349,8 +399,9 @@
 				box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 			}
 
-			.bonus-section {
-				margin-top: 8px;
+			.belote-section {
+				margin-top: 12px;
+				text-align: center;
 			}
 
 			.checkbox-label {
@@ -378,7 +429,7 @@
 
 			.special-buttons button {
 				flex: 1;
-				min-width: 100px;
+				min-width: 80px;
 			}
 
 			.special-buttons button.active {
@@ -416,7 +467,6 @@
 			.preview-team .team-name {
 				display: block;
 				font-size: 12px;
-				color: var(--text-secondary);
 				margin-bottom: 3px;
 			}
 
@@ -424,14 +474,7 @@
 				display: block;
 				font-size: 28px;
 				font-weight: bold;
-			}
-
-			.preview-team.nous .team-score {
-				color: #60a5fa;
-			}
-
-			.preview-team.eux .team-score {
-				color: var(--poker-red-light);
+				color: var(--text-primary);
 			}
 
 			.preview-team .team-score.winner {
@@ -475,16 +518,6 @@
 
 			.score-table {
 				margin-top: 10px;
-			}
-
-			.score-table th.nous,
-			.score-table td.nous {
-				color: #60a5fa;
-			}
-
-			.score-table th.eux,
-			.score-table td.eux {
-				color: var(--poker-red-light);
 			}
 
 			.score-table .success-text {
@@ -551,16 +584,6 @@
 				color: var(--text-primary);
 			}
 
-			span.nous {
-				color: #60a5fa;
-				font-weight: bold;
-			}
-
-			span.eux {
-				color: var(--poker-red-light);
-				font-weight: bold;
-			}
-
 			.status-banner {
 				margin: 12px 0;
 				padding: 12px;
@@ -574,6 +597,47 @@
 				display: inline-block;
 				margin-top: 8px;
 				color: var(--gold);
+			}
+
+			.winner-banner {
+				background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+				border: 2px solid var(--gold);
+				border-radius: var(--border-radius);
+				padding: 20px;
+				text-align: center;
+				margin-bottom: 16px;
+				animation: pulse-gold 2s ease-in-out infinite;
+			}
+
+			.winner-banner h2 {
+				color: var(--gold);
+				margin: 0 0 12px 0;
+				font-size: 1.3em;
+			}
+
+			.declare-winner-btn {
+				background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+				color: var(--felt-green-dark);
+				font-size: 16px;
+				font-weight: bold;
+				padding: 12px 24px;
+				border: none;
+				border-radius: var(--border-radius-sm);
+				cursor: pointer;
+			}
+
+			.declare-winner-btn:hover {
+				box-shadow: var(--shadow-gold);
+			}
+
+			@keyframes pulse-gold {
+				0%,
+				100% {
+					box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+				}
+				50% {
+					box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+				}
 			}
 
 			@media (max-width: 600px) {

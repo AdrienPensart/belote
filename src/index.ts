@@ -88,6 +88,67 @@ export default {
 					return new Response(JSON.stringify({ message: 'missing tableId' }), { status: 400 });
 				}
 				await stub.finish(parseInt(url.searchParams.get('tableId')!!), winningTeam, user.pseudo);
+				await stub.notifyAll(`table finished`);
+				return new Response('ok', { status: 200 });
+			}
+			case '/table/info': {
+				const tableIdParam = url.searchParams.get('tableId');
+				if (!tableIdParam) {
+					return new Response(JSON.stringify({ message: 'missing tableId' }), { status: 400 });
+				}
+				const tableId = parseInt(tableIdParam);
+				if (!(await stub.isUserOnTable(tableId, user.pseudo))) {
+					return new Response(JSON.stringify({ message: 'not on this table' }), { status: 403 });
+				}
+				const fullTable = await stub.getTableById(tableId);
+				if (!fullTable) {
+					return new Response(JSON.stringify({ message: 'table not found' }), { status: 404 });
+				}
+				return new Response(JSON.stringify(fullTable), success);
+			}
+			case '/table/rounds': {
+				const tableIdParam = url.searchParams.get('tableId');
+				if (!tableIdParam) {
+					return new Response(JSON.stringify({ message: 'missing tableId' }), { status: 400 });
+				}
+				const tableId = parseInt(tableIdParam);
+				if (!(await stub.isUserOnTable(tableId, user.pseudo))) {
+					return new Response(JSON.stringify({ message: 'not on this table' }), { status: 403 });
+				}
+				if (request.method === 'GET') {
+					const rounds = await stub.getRounds(tableId);
+					return new Response(JSON.stringify(rounds), success);
+				} else if (request.method === 'POST') {
+					const body = await request.json();
+					const round = await stub.addRound(tableId, body as any);
+					await stub.notifyAll(`round added to table ${tableId}`);
+					return new Response(JSON.stringify(round), success);
+				} else if (request.method === 'DELETE') {
+					const roundIdParam = url.searchParams.get('roundId');
+					if (!roundIdParam) {
+						return new Response(JSON.stringify({ message: 'missing roundId' }), { status: 400 });
+					}
+					await stub.deleteRound(tableId, parseInt(roundIdParam));
+					await stub.notifyAll(`round deleted from table ${tableId}`);
+					return new Response('ok', { status: 200 });
+				}
+				return new Response(JSON.stringify({ message: 'method not allowed' }), { status: 405 });
+			}
+			case '/table/settings': {
+				const tableIdParam = url.searchParams.get('tableId');
+				if (!tableIdParam) {
+					return new Response(JSON.stringify({ message: 'missing tableId' }), { status: 400 });
+				}
+				const tableId = parseInt(tableIdParam);
+				if (!(await stub.isUserOnTable(tableId, user.pseudo))) {
+					return new Response(JSON.stringify({ message: 'not on this table' }), { status: 403 });
+				}
+				const body: { pointsLimit: number; scoringMode: string } = await request.json();
+				if (!body.pointsLimit || !body.scoringMode) {
+					return new Response(JSON.stringify({ message: 'missing pointsLimit or scoringMode' }), { status: 400 });
+				}
+				await stub.updateTableSettings(tableId, body.pointsLimit, body.scoringMode);
+				await stub.notifyAll(`table ${tableId} settings updated`);
 				return new Response('ok', { status: 200 });
 			}
 			case '/gameModes': {
@@ -240,6 +301,12 @@ export default {
 				await stub.deleteTable(parseInt(url.searchParams.get('tableId')!!));
 				await stub.notifyAll(`table deleted`);
 				return new Response(JSON.stringify({ message: `🎉 Table deleted` }), success);
+			}
+			case '/admin/tables/finished': {
+				return new Response(JSON.stringify(await stub.getFinishedTables()), success);
+			}
+			case '/admin/tables/all': {
+				return new Response(JSON.stringify(await stub.getAllTables()), success);
 			}
 			case '/admin/tables/clear': {
 				await stub.adminDeleteAllTables();

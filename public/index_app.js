@@ -104,7 +104,7 @@ angular.module('meltdownApp', [])
               return a.pseudo.localeCompare(b.pseudo);
             });
           }
-          return { name: fullTable.table.name, id: fullTable.table.id, panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams: fullTable.teams };
+          return { name: fullTable.table.name, id: fullTable.table.id, panama: fullTable.table.panama, users: users, readyCount, inThatTable: onThatTable, teams: fullTable.teams, scoreTeam1: fullTable.scoreTeam1 || 0, scoreTeam2: fullTable.scoreTeam2 || 0, pointsLimit: fullTable.table.pointsLimit };
         });
         vm.tables.sort((a, b) => (b.panama ? 1 : 0) - (a.panama ? 1 : 0) || (b.inThatTable ? 1 : 0) - (a.inThatTable ? 1 : 0));
         vm.onTable = newOnTable;

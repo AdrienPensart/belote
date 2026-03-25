@@ -1,4 +1,4 @@
-import { users, gameModes, tables, tablesUsers } from './schema';
+import { users, gameModes, tables, tablesUsers, rounds } from './schema';
 
 // ======================================================================
 // USERS
@@ -26,6 +26,8 @@ export type Team = {
 export type FullTable = {
 	table: Table;
 	teams: Team[];
+	scoreTeam1?: number;
+	scoreTeam2?: number;
 };
 
 export type Stat = {
@@ -45,6 +47,10 @@ export type GameHistory = {
 	finishedAt: number | null;
 	players: GameHistoryPlayer[];
 	userWon: boolean;
+	team1Name: string | null;
+	team2Name: string | null;
+	scoreTeam1: number;
+	scoreTeam2: number;
 };
 
 export type PlayerRanking = {
@@ -62,3 +68,9 @@ export type AlarmEvent = { id: string; runAt: number; repeatMs: number };
 // ======================================================================
 export type TableUser = typeof tablesUsers.$inferSelect;
 export type InsertTableUser = typeof tablesUsers.$inferInsert;
+
+// ======================================================================
+// ROUNDS
+// ======================================================================
+export type Round = typeof rounds.$inferSelect;
+export type InsertRound = typeof rounds.$inferInsert;

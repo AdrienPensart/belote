@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { AlarmEvent, FullTable, GameHistory, GameMode, Stat, User } from './db/schema.types';
+import { AlarmEvent, FullTable, GameHistory, GameMode, InsertRound, Round, Stat, User } from './db/schema.types';
 import { drizzle, type DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
 import { GameService } from './services/GameService';
 import { UserService } from './services/UserService';
@@ -125,6 +125,12 @@ export class MyDurableObject extends DurableObject<Env> {
 	async deleteTable(tableId: number) {
 		return await this.gameService.deleteTable(tableId);
 	}
+	async getFinishedTables() {
+		return await this.gameService.getFinishedTables();
+	}
+	async getAllTables() {
+		return await this.gameService.getAllTables();
+	}
 
 	// for admin exclusively
 	async addTimer(request: Request) {
@@ -240,6 +246,24 @@ export class MyDurableObject extends DurableObject<Env> {
 
 	async getTables(): Promise<FullTable[]> {
 		return this.gameService.getTables();
+	}
+	async isUserOnTable(tableId: number, pseudo: string): Promise<boolean> {
+		return this.gameService.isUserOnTable(tableId, pseudo);
+	}
+	async getRounds(tableId: number): Promise<Round[]> {
+		return this.gameService.getRounds(tableId);
+	}
+	async addRound(tableId: number, data: InsertRound): Promise<Round> {
+		return this.gameService.addRound(tableId, data);
+	}
+	async deleteRound(tableId: number, roundId: number): Promise<void> {
+		return this.gameService.deleteRound(tableId, roundId);
+	}
+	async updateTableSettings(tableId: number, pointsLimit: number, scoringMode: string): Promise<void> {
+		return this.gameService.updateTableSettings(tableId, pointsLimit, scoringMode);
+	}
+	async getTableById(tableId: number): Promise<FullTable | undefined> {
+		return this.gameService.getTableById(tableId);
 	}
 	async notifyAll(reason: string) {
 		this.sessions.forEach((_, session) => {

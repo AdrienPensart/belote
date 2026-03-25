@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" ng-app="meltdownAdminTables">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Gestion des tables - Meltdown Belote</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+		<script src="admin_tables.js"></script>
+	</head>
+	<body class="backend" ng-controller="AdminTablesCtrl as vm" ng-cloak>
+		<div class="form" style="width: 100%; max-width: 900px">
+			<h2 style="color: var(--gold); margin-top: 0; font-size: 1.1em">Gestion des tables</h2>
+			<p style="color: var(--text-secondary); font-size: 13px" ng-if="vm.loading">Chargement...</p>
+			<p style="color: var(--text-secondary); font-size: 13px" ng-if="!vm.loading && vm.tables.length === 0">Aucune table.</p>
+		</div>
+
+		<div id="tables" ng-if="vm.tables.length > 0">
+			<div ng-repeat="game in vm.tables">
+				<div class="table_ready_status" style="display: flex; align-items: center; justify-content: space-between">
+					<span>
+						{{game.table.name}}
+						<span
+							style="font-size: 11px; margin-left: 6px; padding: 2px 6px; border-radius: 4px"
+							ng-style="game.table.finishedAt ? {'background': '#2d4a2d', 'color': '#8fbc8f'} : {'background': '#4a3a2d', 'color': '#daa520'}"
+						>
+							{{game.table.finishedAt ? 'Terminée' : 'En cours'}}
+						</span>
+						<span ng-if="game.table.createdAt" style="font-size: 11px; color: var(--text-secondary); margin-left: 6px">
+							Créée : {{game.table.createdAt | date:'dd/MM/yyyy HH:mm'}}
+						</span>
+						<span ng-if="game.table.finishedAt" style="font-size: 11px; color: var(--text-secondary); margin-left: 6px">
+							— Terminée : {{game.table.finishedAt | date:'dd/MM/yyyy HH:mm'}}
+						</span>
+						<span style="font-size: 11px; color: var(--text-secondary); margin-left: 6px"> — Limite : {{game.table.pointsLimit}} pts </span>
+					</span>
+					<button
+						class="secondary_background"
+						style="margin: 0; padding: 4px 10px; font-size: 12px; flex: none"
+						ng-click="vm.deleteTable(game.table.id)"
+					>
+						Supprimer
+					</button>
+				</div>
+				<table class="tables">
+					<thead>
+						<tr>
+							<th>Equipe</th>
+							<th>Joueurs</th>
+							<th>Score</th>
+							<th>Résultat</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="team in game.teams">
+							<td><span ng-style="{ color: team.name }">{{team.name}}</span></td>
+							<td>{{vm.getTeamPlayers(game, team.name)}}</td>
+							<td>{{vm.getTeamScore(game, $index)}}</td>
+							<td>{{team.users[0].winner ? 'Gagnant' : 'Perdant'}}</td>
+						</tr>
+					</tbody>
+				</table>
+				<hr class="table_separator" />
+			</div>
+		</div>
+
+		<div class="links-container">
+			<a href="/">Index</a>
+			<a href="/backend">Backend</a>
+			<a href="/stats">Stats</a>
+			<a href="/history">Historique</a>
+		</div>
+	</body>
+</html>

@@ -455,6 +455,8 @@ describe('Table generation', () => {
 					finished: false,
 					panama: true,
 					name: 'Panama',
+					pointsLimit: 1001,
+					scoringMode: 'belote',
 				},
 				teams: [
 					{

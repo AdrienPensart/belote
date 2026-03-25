@@ -200,9 +200,12 @@ const generateTable = function (
 		table: {
 			gamemodeId: gameMode.id,
 			id: -1,
-			finished: false,
 			panama: false,
 			name: tableName,
+			pointsLimit: 1001,
+			scoringMode: 'belote',
+			createdAt: null,
+			finishedAt: null,
 		},
 		teams: teams,
 	};

@@ -17,9 +17,15 @@
 
 		<div id="tables" ng-if="ctrl.history.length > 0">
 			<div ng-repeat="game in ctrl.history">
-				<div class="table_ready_status">
-					<span ng-class="game.userWon ? 'game-won' : 'game-lost'"> {{game.userWon ? 'VICTOIRE' : 'DEFAITE'}} </span>
-					- {{game.tableName}}
+				<div class="table_ready_status" style="display: flex; align-items: center; justify-content: space-between">
+					<span>
+						<span ng-class="game.userWon ? 'game-won' : 'game-lost'"> {{game.userWon ? 'VICTOIRE' : 'DEFAITE'}} </span>
+						- {{game.tableName}}
+					</span>
+					<span class="history-score" ng-if="game.team1Name">
+						<span ng-style="{ color: game.team1Name }">{{game.team1Name}}</span> {{game.scoreTeam1}} - {{game.scoreTeam2}}
+						<span ng-style="{ color: game.team2Name }">{{game.team2Name}}</span>
+					</span>
 				</div>
 				<table class="tables">
 					<thead>
@@ -43,7 +49,6 @@
 
 		<div class="links-container">
 			<a href="/">Index</a>
-			<a href="/score">Compteur de Points</a>
 			<a href="/stats">Stats</a>
 			<a href="/history">Historique</a>
 			<a href="/account">Mon Compte</a>
@@ -61,6 +66,10 @@
 			.game-lost {
 				color: var(--poker-red-light);
 				font-weight: bold;
+			}
+			.history-score {
+				font-size: 0.9em;
+				white-space: nowrap;
 			}
 		</style>
 	</body>

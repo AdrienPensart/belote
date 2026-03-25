@@ -38,8 +38,16 @@
 
 		<div id="tables">
 			<div ng-repeat="table in ctrl.tables">
-				<div class="table_ready_status">
-					<div class="table_ready_status">{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</div>
+				<div class="table_ready_status" style="display: flex; align-items: center; justify-content: space-between">
+					<span>{{table.name}} : ({{table.readyCount}} / {{table.users.length}} prêts)</span>
+					<span ng-if="!table.panama && table.teams.length >= 2" style="font-size: 12px">
+						<span ng-style="{ color: table.teams[0].name }">{{table.teams[0].name}}</span> {{table.scoreTeam1}} - {{table.scoreTeam2}}
+						<span ng-style="{ color: table.teams[1].name }">{{table.teams[1].name}}</span>
+						<span style="color: var(--text-secondary)">/ {{table.pointsLimit}}</span>
+					</span>
+					<a ng-if="!table.panama && table.inThatTable" href="/table?tableId={{table.id}}" style="color: var(--gold); margin-left: 10px"
+						>🃏 Compteur (beta)</a
+					>
 				</div>
 
 				<table class="tables">
@@ -80,7 +88,6 @@
 		</div>
 
 		<div class="links-container" ng-if="ctrl.tablesLoaded">
-			<a href="/score">Compteur de Points</a>
 			<a href="/stats">Stats</a>
 			<a href="/history">Historique</a>
 			<a href="/account">Mon Compte</a>

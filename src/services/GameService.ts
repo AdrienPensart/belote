@@ -1,7 +1,19 @@
-import { GameMode, Table, User, FullTable, Team, Stat, GameHistory, GameHistoryPlayer, PlayerRanking } from '../db/schema.types';
+import {
+	GameMode,
+	Table,
+	User,
+	FullTable,
+	Team,
+	Stat,
+	GameHistory,
+	GameHistoryPlayer,
+	PlayerRanking,
+	Round,
+	InsertRound,
+} from '../db/schema.types';
 import { DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
-import { users, tables, tablesUsers, gameModes } from '../db/schema'; // your schema file
-import { and, eq, sql } from 'drizzle-orm';
+import { users, tables, tablesUsers, gameModes, rounds } from '../db/schema'; // your schema file
+import { and, eq, sql, asc } from 'drizzle-orm';
 import { generateFullTables, TEAMS } from '../table';
 
 export class GameService {
@@ -86,7 +98,7 @@ export class GameService {
 				})
 				.from(tablesUsers)
 				.innerJoin(tables, eq(tables.id, tablesUsers.tableId))
-				.where(and(eq(tablesUsers.userId, user.id), eq(tables.finished, false)))
+				.where(and(eq(tablesUsers.userId, user.id), sql`${tables.finishedAt} IS NULL`))
 		).map((elem) => elem.table);
 	}
 	public async createTable(tableName: string, gameModeId: number, teams: Team[]): Promise<Table> {
@@ -95,6 +107,7 @@ export class GameService {
 			.values({
 				name: tableName,
 				gamemodeId: gameModeId,
+				createdAt: Date.now(),
 			})
 			.returning()
 			.get();
@@ -119,7 +132,7 @@ export class GameService {
 			.from(tables)
 			.leftJoin(tablesUsers, eq(tablesUsers.tableId, tables.id))
 			.leftJoin(users, eq(tablesUsers.userId, users.id))
-			.where(eq(tables.finished, false));
+			.where(sql`${tables.finishedAt} IS NULL`);
 		const map = new Map<number, FullTable>();
 
 		for (const row of rows) {
@@ -158,7 +171,21 @@ export class GameService {
 			}
 		}
 
-		return [...map.values()];
+		const result = [...map.values()];
+
+		for (const ft of result) {
+			if (!ft.table.panama) {
+				const scoreRows = await this.db
+					.select({ s1: sql<number>`COALESCE(SUM(${rounds.scoreTeam1}), 0)`, s2: sql<number>`COALESCE(SUM(${rounds.scoreTeam2}), 0)` })
+					.from(rounds)
+					.where(eq(rounds.tableId, ft.table.id))
+					.all();
+				ft.scoreTeam1 = scoreRows[0]?.s1 ?? 0;
+				ft.scoreTeam2 = scoreRows[0]?.s2 ?? 0;
+			}
+		}
+
+		return result;
 	}
 
 	public async swapPeople(pseudos: string[]) {
@@ -232,21 +259,100 @@ export class GameService {
 		}
 	}
 
+	public async isUserOnTable(tableId: number, pseudo: string): Promise<boolean> {
+		const fullTables = await this.getTables();
+		const table = fullTables.find((ft) => ft.table.id === tableId);
+		if (!table) return false;
+		for (const team of table.teams) {
+			if (team.users.some((u) => u.pseudo === pseudo)) return true;
+		}
+		return false;
+	}
+
+	public async getRounds(tableId: number): Promise<Round[]> {
+		return await this.db.select().from(rounds).where(eq(rounds.tableId, tableId)).orderBy(asc(rounds.id)).all();
+	}
+
+	public async getFinishedTables(): Promise<{ table: Table; teams: Team[]; scoreTeam1: number; scoreTeam2: number }[]> {
+		return this.getAllTables(true);
+	}
+
+	public async getAllTables(
+		finishedOnly: boolean = false,
+	): Promise<{ table: Table; teams: Team[]; scoreTeam1: number; scoreTeam2: number }[]> {
+		const condition = finishedOnly ? and(sql`${tables.finishedAt} IS NOT NULL`, eq(tables.panama, false)) : eq(tables.panama, false);
+		const rows = await this.db
+			.select({
+				table: tables,
+				user: users,
+				tablesUsers: tablesUsers,
+			})
+			.from(tables)
+			.leftJoin(tablesUsers, eq(tablesUsers.tableId, tables.id))
+			.leftJoin(users, eq(tablesUsers.userId, users.id))
+			.where(condition);
+
+		const map = new Map<number, { table: Table; teams: Team[] }>();
+		for (const row of rows) {
+			if (!map.has(row.table.id)) {
+				map.set(row.table.id, { table: row.table, teams: [] });
+			}
+			if (row.user && row.tablesUsers) {
+				let team = map.get(row.table.id)!.teams.find((t) => t.name === row.tablesUsers!.team);
+				if (!team) {
+					team = { name: row.tablesUsers.team!, users: [] };
+					map.get(row.table.id)!.teams.push(team);
+				}
+				team.users.push({ ...row.user, token: null, password: null });
+			}
+		}
+
+		const result = [];
+		for (const entry of map.values()) {
+			const roundRows = await this.db
+				.select({ s1: sql<number>`COALESCE(SUM(${rounds.scoreTeam1}), 0)`, s2: sql<number>`COALESCE(SUM(${rounds.scoreTeam2}), 0)` })
+				.from(rounds)
+				.where(eq(rounds.tableId, entry.table.id))
+				.all();
+			result.push({
+				...entry,
+				scoreTeam1: roundRows[0]?.s1 ?? 0,
+				scoreTeam2: roundRows[0]?.s2 ?? 0,
+			});
+		}
+		return result;
+	}
+
+	public async addRound(tableId: number, data: InsertRound): Promise<Round> {
+		return await this.db
+			.insert(rounds)
+			.values({ ...data, tableId })
+			.returning()
+			.get();
+	}
+
+	public async deleteRound(tableId: number, roundId: number): Promise<void> {
+		await this.db.delete(rounds).where(and(eq(rounds.id, roundId), eq(rounds.tableId, tableId)));
+	}
+
+	public async updateTableSettings(tableId: number, pointsLimit: number, scoringMode: string): Promise<void> {
+		await this.db.update(tables).set({ pointsLimit, scoringMode }).where(eq(tables.id, tableId));
+	}
+
+	public async getTableById(tableId: number): Promise<FullTable | undefined> {
+		const fullTables = await this.getTables();
+		return fullTables.find((ft) => ft.table.id === tableId);
+	}
+
 	public async finish(tableId: number, winningTeam: string, pseudo: string | undefined) {
 		const fullTables = await this.getTables();
 		const table = fullTables.filter((fullTable) => fullTable.table.id == tableId)[0];
 		if (pseudo) {
-			let hasPseudo = false;
-			for (const team of table.teams) {
-				if (team.users.filter((user) => user.pseudo === pseudo).length > 0) {
-					hasPseudo = true;
-				}
-			}
-			if (!hasPseudo) {
+			if (!(await this.isUserOnTable(tableId, pseudo))) {
 				return;
 			}
 		}
-		await this.db.update(tables).set({ finished: true }).where(eq(tables.id, tableId));
+		await this.db.update(tables).set({ finishedAt: Date.now() }).where(eq(tables.id, tableId));
 		await this.db
 			.update(tablesUsers)
 			.set({ winner: true })
@@ -294,7 +400,7 @@ export class GameService {
                         JOIN tables tables
                         ON tu1.table_id = tables.id
                         WHERE tu1.user_id = ${user.id}
-                        AND tu2.user_id != tu1.user_id and tables.finished = true and tables.gamemode_id = ${gameMode.id}
+                        AND tu2.user_id != tu1.user_id and tables.finished_at IS NOT NULL and tables.gamemode_id = ${gameMode.id}
                         GROUP BY tu2.user_id
                     )
                     SELECT
@@ -363,7 +469,7 @@ export class GameService {
 			FROM tables_users tu
 			JOIN users u ON u.id = tu.user_id
 			JOIN tables t ON t.id = tu.table_id
-			WHERE t.finished = true AND t.panama = false
+			WHERE t.finished_at IS NOT NULL AND t.panama = false
 			GROUP BY tu.user_id
 			ORDER BY wins DESC, gamesPlayed ASC
 		`);
@@ -393,12 +499,15 @@ export class GameService {
                 u.pseudo as playerPseudo,
                 tu.team as playerTeam,
                 tu.winner as playerWinner,
-                (SELECT tu2.winner FROM tables_users tu2 WHERE tu2.table_id = t.id AND tu2.user_id = ${user.id}) as userWinner
+                (SELECT tu2.winner FROM tables_users tu2 WHERE tu2.table_id = t.id AND tu2.user_id = ${user.id}) as userWinner,
+                COALESCE((SELECT SUM(r.score_team1) FROM rounds r WHERE r.table_id = t.id), 0) as scoreTeam1,
+                COALESCE((SELECT SUM(r.score_team2) FROM rounds r WHERE r.table_id = t.id), 0) as scoreTeam2,
+                t.finished_at as finishedAt
             FROM tables t
             JOIN gamesModes gm ON gm.id = t.gamemode_id
             JOIN tables_users tu ON tu.table_id = t.id
             JOIN users u ON u.id = tu.user_id
-            WHERE t.finished = true
+            WHERE t.finished_at IS NOT NULL
             AND t.panama = false
             AND t.id IN (
                 SELECT table_id FROM tables_users WHERE user_id = ${user.id}
@@ -415,16 +524,26 @@ export class GameService {
 					tableId: row.tableId,
 					tableName: row.tableName,
 					gameMode: row.gameModeName,
-					finishedAt: null,
+					finishedAt: (row as any).finishedAt ?? null,
 					players: [],
 					userWon: row.userWinner === 1,
+					team1Name: null,
+					team2Name: null,
+					scoreTeam1: (row as any).scoreTeam1 || 0,
+					scoreTeam2: (row as any).scoreTeam2 || 0,
 				});
 			}
 
 			const history = historyMap.get(row.tableId)!;
+			const playerTeam = (row as any).playerTeam;
+			if (playerTeam && !history.team1Name) {
+				history.team1Name = playerTeam;
+			} else if (playerTeam && playerTeam !== history.team1Name && !history.team2Name) {
+				history.team2Name = playerTeam;
+			}
 			history.players.push({
 				pseudo: (row as any).playerPseudo,
-				team: (row as any).playerTeam,
+				team: playerTeam,
 				winner: (row as any).playerWinner === 1,
 			});
 		}
