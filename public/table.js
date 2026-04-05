@@ -56,8 +56,8 @@ angular.module('meltdownApp', [])
 
         // Current round input
         vm.contractTeam = '';
-        vm.pointsTeam1 = null;
-        vm.pointsTeam2 = null;
+        vm.pointsBlack = null;
+        vm.pointsRed = null;
         vm.beloteTeam = null; // null, team1Name, or team2Name
         vm.capot = null;
 
@@ -134,13 +134,15 @@ angular.module('meltdownApp', [])
                 vm.customLimit = vm.pointsLimit;
             }
 
-            // Extract team names (first two non-panama teams)
+            // Extract team names - ensure black is always team1 (left), red is team2 (right)
             var teams = fullTable.teams;
             if (teams.length >= 2) {
-                vm.team1Name = teams[0].name;
-                vm.team2Name = teams[1].name;
-                vm.team1Players = teams[0].users.map(function (u) { return u.pseudo; });
-                vm.team2Players = teams[1].users.map(function (u) { return u.pseudo; });
+                var blackIdx = teams[0].name === 'black' ? 0 : 1;
+                var redIdx = 1 - blackIdx;
+                vm.team1Name = teams[blackIdx].name;
+                vm.team2Name = teams[redIdx].name;
+                vm.team1Players = teams[blackIdx].users.map(function (u) { return u.pseudo; });
+                vm.team2Players = teams[redIdx].users.map(function (u) { return u.pseudo; });
             } else if (teams.length === 1) {
                 vm.team1Name = teams[0].name;
                 vm.team2Name = 'team2';
@@ -279,15 +281,15 @@ angular.module('meltdownApp', [])
             var TOTAL_POINTS = 162;
             if (vm.capot) return;
 
-            if (changedTeam === 'team1' && vm.pointsTeam1 !== null && vm.pointsTeam1 !== '') {
-                var points = parseInt(vm.pointsTeam1) || 0;
+            if (changedTeam === 'team1' && vm.pointsBlack !== null && vm.pointsBlack !== '') {
+                var points = parseInt(vm.pointsBlack) || 0;
                 if (points >= 0 && points <= TOTAL_POINTS) {
-                    vm.pointsTeam2 = TOTAL_POINTS - points;
+                    vm.pointsRed = TOTAL_POINTS - points;
                 }
-            } else if (changedTeam === 'team2' && vm.pointsTeam2 !== null && vm.pointsTeam2 !== '') {
-                var points = parseInt(vm.pointsTeam2) || 0;
+            } else if (changedTeam === 'team2' && vm.pointsRed !== null && vm.pointsRed !== '') {
+                var points = parseInt(vm.pointsRed) || 0;
                 if (points >= 0 && points <= TOTAL_POINTS) {
-                    vm.pointsTeam1 = TOTAL_POINTS - points;
+                    vm.pointsBlack = TOTAL_POINTS - points;
                 }
             }
         };
@@ -301,19 +303,19 @@ angular.module('meltdownApp', [])
         vm.setCapot = function (team) {
             vm.capot = team;
             if (team === vm.team1Name) {
-                vm.pointsTeam1 = 162;
-                vm.pointsTeam2 = 0;
+                vm.pointsBlack = 162;
+                vm.pointsRed = 0;
             } else if (team === vm.team2Name) {
-                vm.pointsTeam1 = 0;
-                vm.pointsTeam2 = 162;
+                vm.pointsBlack = 0;
+                vm.pointsRed = 162;
             }
         };
 
         // Check if we can calculate the result
         vm.canCalculate = function () {
             return vm.contractTeam &&
-                (vm.pointsTeam1 !== null && vm.pointsTeam1 !== '') &&
-                (vm.pointsTeam2 !== null && vm.pointsTeam2 !== '');
+                (vm.pointsBlack !== null && vm.pointsBlack !== '') &&
+                (vm.pointsRed !== null && vm.pointsRed !== '');
         };
 
         vm.getPreviewResult = function () {
@@ -326,8 +328,8 @@ angular.module('meltdownApp', [])
             var CAPOT_BONUS = 90;
             var BELOTE_BONUS = 20;
 
-            var pointsTeam1 = parseInt(vm.pointsTeam1) || 0;
-            var pointsTeam2 = parseInt(vm.pointsTeam2) || 0;
+            var pointsTeam1 = parseInt(vm.pointsBlack) || 0;
+            var pointsTeam2 = parseInt(vm.pointsRed) || 0;
 
             var beloteTeam1 = vm.beloteTeam === vm.team1Name;
             var beloteTeam2 = vm.beloteTeam === vm.team2Name;
@@ -505,8 +507,8 @@ angular.module('meltdownApp', [])
                 contractTeam: vm.contractTeam,
                 contractValue: vm.scoringMode === 'coinche' ? vm.contractValue : null,
                 coincheLevel: vm.scoringMode === 'coinche' ? vm.coincheLevel : 1,
-                pointsTeam1Raw: parseInt(vm.pointsTeam1),
-                pointsTeam2Raw: parseInt(vm.pointsTeam2),
+                pointsTeam1Raw: parseInt(vm.pointsBlack),
+                pointsTeam2Raw: parseInt(vm.pointsRed),
                 beloteTeam1: vm.beloteTeam === vm.team1Name,
                 beloteTeam2: vm.beloteTeam === vm.team2Name,
                 capot: vm.capot,
@@ -549,8 +551,8 @@ angular.module('meltdownApp', [])
             vm.contractTeam = vm.team1Name;
             vm.contractValue = 80;
             vm.coincheLevel = 1;
-            vm.pointsTeam1 = null;
-            vm.pointsTeam2 = null;
+            vm.pointsBlack = null;
+            vm.pointsRed = null;
             vm.beloteTeam = null;
             vm.capot = null;
         };

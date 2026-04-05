@@ -148,12 +148,12 @@
 							<div class="team-column team1">
 								<h3 ng-style="{ color: ctrl.team1Name }">Team {{ctrl.team1Name}}</h3>
 								<label>Points (0-162)</label>
-								<input type="number" ng-model="ctrl.pointsTeam1" ng-change="ctrl.syncPoints('team1')" min="0" max="162" placeholder="0" />
+								<input type="number" ng-model="ctrl.pointsBlack" ng-change="ctrl.syncPoints('team1')" min="0" max="162" placeholder="0" />
 							</div>
 							<div class="team-column team2">
 								<h3 ng-style="{ color: ctrl.team2Name }">Team {{ctrl.team2Name}}</h3>
 								<label>Points (0-162)</label>
-								<input type="number" ng-model="ctrl.pointsTeam2" ng-change="ctrl.syncPoints('team2')" min="0" max="162" placeholder="0" />
+								<input type="number" ng-model="ctrl.pointsRed" ng-change="ctrl.syncPoints('team2')" min="0" max="162" placeholder="0" />
 							</div>
 						</div>
 						<div class="belote-section">
