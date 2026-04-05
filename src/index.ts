@@ -119,8 +119,9 @@ export default {
 					const rounds = await stub.getRounds(tableId);
 					return new Response(JSON.stringify(rounds), success);
 				} else if (request.method === 'POST') {
-					const body = await request.json();
-					const round = await stub.addRound(tableId, body as any);
+					const body: any = await request.json();
+					const newLitige = typeof body.newLitige === 'number' ? body.newLitige : 0;
+					const round = await stub.addRound(tableId, body as any, newLitige);
 					await stub.notifyAll(`round added to table ${tableId}`);
 					return new Response(JSON.stringify(round), success);
 				} else if (request.method === 'DELETE') {

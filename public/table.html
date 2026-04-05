@@ -40,6 +40,12 @@
 					</button>
 				</div>
 
+				<!-- Litige Banner -->
+				<div class="litige-banner" ng-if="ctrl.litige > 0">
+					<h3>⚖️ Litige en cours : <strong>{{ctrl.litige}}</strong> points en jeu</h3>
+					<p>Le vainqueur de la prochaine manche remportera ces points.</p>
+				</div>
+
 				<!-- Settings -->
 				<div class="form" style="width: 100%; max-width: 500px">
 					<h2 style="margin-top: 0; font-size: 1.1em">Paramètres</h2>
@@ -199,6 +205,13 @@
 						<div class="result-message" ng-class="ctrl.getPreviewResult().contractSuccess ? 'success' : 'failure'">
 							{{ctrl.getPreviewResult().message}}
 						</div>
+						<div
+							class="result-message"
+							style="margin-top: 6px; background: rgba(139, 92, 246, 0.1); color: #a78bfa"
+							ng-if="ctrl.litige > 0 && !ctrl.getPreviewResult().isLitige"
+						>
+							+{{ctrl.litige}} pts de litige attribués au vainqueur
+						</div>
 					</div>
 
 					<button class="add-round-btn" ng-click="ctrl.addRound()" ng-disabled="!ctrl.canCalculate()">Ajouter la Manche</button>
@@ -228,7 +241,8 @@
 								<td ng-style="{ color: ctrl.team1Name }">{{round.scoreTeam1}}</td>
 								<td ng-style="{ color: ctrl.team2Name }">{{round.scoreTeam2}}</td>
 								<td>
-									<span ng-class="round.contractSuccess ? 'success-text' : 'failure-text'">
+									<span ng-if="round.litige" class="litige-text">Litige</span>
+									<span ng-if="!round.litige" ng-class="round.contractSuccess ? 'success-text' : 'failure-text'">
 										{{round.contractSuccess ? 'Contrat réussi' : 'Chute'}}
 									</span>
 								</td>
@@ -251,6 +265,11 @@
 							<tr>
 								<td colspan="6" style="text-align: center; color: var(--text-muted); font-size: 12px">
 									Objectif : {{ctrl.pointsLimit}} points
+								</td>
+							</tr>
+							<tr ng-if="ctrl.litige > 0">
+								<td colspan="6" style="text-align: center; font-size: 12px">
+									<span class="litige-text">⚖️ Litige : {{ctrl.litige}} pts en jeu</span>
 								</td>
 							</tr>
 						</tfoot>
@@ -528,6 +547,11 @@
 				color: #ef4444;
 			}
 
+			.score-table .litige-text {
+				color: #a78bfa;
+				font-weight: bold;
+			}
+
 			.total-row {
 				background: var(--surface-lighter);
 				font-size: 1.1em;
@@ -628,6 +652,27 @@
 
 			.declare-winner-btn:hover {
 				box-shadow: var(--shadow-gold);
+			}
+
+			.litige-banner {
+				background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+				border: 2px solid #a78bfa;
+				border-radius: var(--border-radius);
+				padding: 14px 20px;
+				text-align: center;
+				margin-bottom: 16px;
+			}
+
+			.litige-banner h3 {
+				color: #a78bfa;
+				margin: 0 0 4px 0;
+				font-size: 1.1em;
+			}
+
+			.litige-banner p {
+				color: var(--text-muted);
+				margin: 0;
+				font-size: 0.85em;
 			}
 
 			@keyframes pulse-gold {

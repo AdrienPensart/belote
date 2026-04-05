@@ -1,0 +1,1 @@
+ALTER TABLE `tables` ADD `litige` integer DEFAULT 0 NOT NULL;

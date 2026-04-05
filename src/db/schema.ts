@@ -38,6 +38,7 @@ export const tables = sqliteTable('tables', {
 	panama: integer('panama', { mode: 'boolean' }).notNull().default(false),
 	pointsLimit: integer('points_limit').notNull().default(1001),
 	scoringMode: text('scoring_mode').notNull().default('belote'),
+	litige: integer('litige').notNull().default(0),
 	createdAt: integer('created_at'),
 	finishedAt: integer('finished_at'),
 

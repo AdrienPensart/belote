@@ -253,8 +253,8 @@ export class MyDurableObject extends DurableObject<Env> {
 	async getRounds(tableId: number): Promise<Round[]> {
 		return this.gameService.getRounds(tableId);
 	}
-	async addRound(tableId: number, data: InsertRound): Promise<Round> {
-		return this.gameService.addRound(tableId, data);
+	async addRound(tableId: number, data: InsertRound, newLitige: number = 0): Promise<Round> {
+		return this.gameService.addRound(tableId, data, newLitige);
 	}
 	async deleteRound(tableId: number, roundId: number): Promise<void> {
 		return this.gameService.deleteRound(tableId, roundId);

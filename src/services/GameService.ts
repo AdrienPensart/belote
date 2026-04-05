@@ -323,16 +323,19 @@ export class GameService {
 		return result;
 	}
 
-	public async addRound(tableId: number, data: InsertRound): Promise<Round> {
-		return await this.db
+	public async addRound(tableId: number, data: InsertRound, newLitige: number = 0): Promise<Round> {
+		const round = await this.db
 			.insert(rounds)
 			.values({ ...data, tableId })
 			.returning()
 			.get();
+		await this.db.update(tables).set({ litige: newLitige }).where(eq(tables.id, tableId));
+		return round;
 	}
 
 	public async deleteRound(tableId: number, roundId: number): Promise<void> {
 		await this.db.delete(rounds).where(and(eq(rounds.id, roundId), eq(rounds.tableId, tableId)));
+		await this.db.update(tables).set({ litige: 0 }).where(eq(tables.id, tableId));
 	}
 
 	public async updateTableSettings(tableId: number, pointsLimit: number, scoringMode: string): Promise<void> {

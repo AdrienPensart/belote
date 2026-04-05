@@ -47,6 +47,7 @@ angular.module('meltdownApp', [])
         vm.pointsLimit = 1001;
         vm.customLimit = 301;
         vm.scoringMode = 'belote';
+        vm.litige = 0;
 
         // Contract values for coinche
         vm.contractValues = [80, 90, 100, 110, 120, 130, 140, 150, 160, 250];
@@ -128,6 +129,7 @@ angular.module('meltdownApp', [])
             vm.tableName = fullTable.table.name;
             vm.pointsLimit = fullTable.table.pointsLimit || 1001;
             vm.scoringMode = fullTable.table.scoringMode || 'belote';
+            vm.litige = fullTable.table.litige || 0;
             if (vm.isCustomLimit()) {
                 vm.customLimit = vm.pointsLimit;
             }
@@ -159,6 +161,11 @@ angular.module('meltdownApp', [])
             if (!vm.tableId) return;
             $http.get('/table/rounds?tableId=' + vm.tableId).then(function (resp) {
                 vm.rounds = resp.data;
+                vm.rounds.forEach(function (round) {
+                    var t1 = round.pointsTeam1Raw + (round.beloteTeam1 ? 20 : 0);
+                    var t2 = round.pointsTeam2Raw + (round.beloteTeam2 ? 20 : 0);
+                    round.litige = !round.capot && !round.contractSuccess && t1 === t2;
+                });
                 vm.calculateTotals();
             });
         };
@@ -169,6 +176,7 @@ angular.module('meltdownApp', [])
             $http.get('/table/info?tableId=' + vm.tableId).then(function (resp) {
                 vm.pointsLimit = resp.data.table.pointsLimit || 1001;
                 vm.scoringMode = resp.data.table.scoringMode || 'belote';
+                vm.litige = resp.data.table.litige || 0;
                 if (vm.isCustomLimit()) {
                     vm.customLimit = vm.pointsLimit;
                 }
@@ -370,6 +378,7 @@ angular.module('meltdownApp', [])
 
                 // Litige
                 if (!vm.capot && team1WithBelote === team2WithBelote) {
+                    var litigeAtStake = contractIsTeam1 ? team1WithBelote : team2WithBelote;
                     if (contractIsTeam1) {
                         team1Score = 0;
                         team2Score = team2WithBelote;
@@ -378,7 +387,15 @@ angular.module('meltdownApp', [])
                         team2Score = 0;
                     }
                     contractSuccess = false;
-                    message = 'Litige! Le preneur ne marque rien.';
+                    var totalLitige = vm.litige + litigeAtStake;
+                    message = 'Litige! Le preneur ne marque rien. (' + totalLitige + ' pts en litige)';
+                } else if (vm.litige > 0) {
+                    // Distribute accumulated litige to the round winner
+                    if (team1Score >= team2Score) {
+                        team1Score += vm.litige;
+                    } else {
+                        team2Score += vm.litige;
+                    }
                 }
             } else {
                 // Coinche rules
@@ -417,6 +434,28 @@ angular.module('meltdownApp', [])
                         }
                     }
                 }
+
+                // Litige
+                if (!vm.capot && team1WithBelote === team2WithBelote) {
+                    var litigeAtStake = contractIsTeam1 ? team1WithBelote : team2WithBelote;
+                    if (contractIsTeam1) {
+                        team1Score = 0;
+                        team2Score = team2WithBelote;
+                    } else {
+                        team1Score = team1WithBelote;
+                        team2Score = 0;
+                    }
+                    contractSuccess = false;
+                    var totalLitige = vm.litige + litigeAtStake;
+                    message = 'Litige! Le preneur ne marque rien. (' + totalLitige + ' pts en litige)';
+                } else if (vm.litige > 0) {
+                    // Distribute accumulated litige to the round winner
+                    if (team1Score >= team2Score) {
+                        team1Score += vm.litige;
+                    } else {
+                        team2Score += vm.litige;
+                    }
+                }
             }
 
             if (!message) {
@@ -436,12 +475,23 @@ angular.module('meltdownApp', [])
                 }
             }
 
+            var isLitige = false;
+            var newLitige = 0;
+
+            if (!vm.capot && team1WithBelote === team2WithBelote) {
+                isLitige = true;
+                var litigeAtStake = contractIsTeam1 ? team1WithBelote : team2WithBelote;
+                newLitige = vm.litige + litigeAtStake;
+            }
+
             return {
                 team1Score: Math.round(team1Score),
                 team2Score: Math.round(team2Score),
                 contractSuccess: contractSuccess,
                 message: message,
-                team1Wins: team1Score > team2Score
+                team1Wins: team1Score > team2Score,
+                isLitige: isLitige,
+                newLitige: newLitige
             };
         };
 
@@ -462,10 +512,12 @@ angular.module('meltdownApp', [])
                 capot: vm.capot,
                 scoreTeam1: result.team1Score,
                 scoreTeam2: result.team2Score,
-                contractSuccess: result.contractSuccess
+                contractSuccess: result.contractSuccess,
+                newLitige: result.newLitige
             };
 
             $http.post('/table/rounds?tableId=' + vm.tableId, roundData).then(function () {
+                vm.litige = result.newLitige;
                 vm.resetRoundInput();
                 vm.refreshRounds();
             });
