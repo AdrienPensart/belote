@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"bcrypt-ts": "^7.1.0",
-		"drizzle-orm": "^0.44.7",
+		"drizzle-orm": "^0.45.2",
 		"uuid": "^13.0.0"
 	}
 }
