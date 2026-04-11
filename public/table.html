@@ -32,20 +32,6 @@
 					<span class="team-players">({{ctrl.team2Players.join(', ')}})</span>
 				</div>
 
-				<!-- Winner Banner -->
-				<div class="winner-banner" ng-if="ctrl.winnerTeam">
-					<h2>🏆 Team <span ng-style="{ color: ctrl.winnerTeam }">{{ctrl.winnerTeam}}</span> a atteint {{ctrl.pointsLimit}} points !</h2>
-					<button class="declare-winner-btn" ng-click="ctrl.declareWinner(ctrl.winnerTeam)">
-						Déclarer Team {{ctrl.winnerTeam}} vainqueur
-					</button>
-				</div>
-
-				<!-- Litige Banner -->
-				<div class="litige-banner" ng-if="ctrl.litige > 0">
-					<h3>⚖️ Litige en cours : <strong>{{ctrl.litige}}</strong> points en jeu</h3>
-					<p>Le vainqueur de la prochaine manche remportera ces points.</p>
-				</div>
-
 				<!-- Settings -->
 				<div class="form" style="width: 100%; max-width: 500px">
 					<h2 style="margin-top: 0; font-size: 1.1em">Paramètres</h2>
@@ -97,7 +83,7 @@
 				</div>
 
 				<!-- Score Input Form -->
-				<div class="form score-form" style="width: 100%; max-width: 700px">
+				<div class="form score-form" style="width: 100%; max-width: 700px" ng-if="!ctrl.winnerTeam">
 					<h2>Nouvelle Manche</h2>
 
 					<!-- Contract Info -->
@@ -110,15 +96,15 @@
 								class="team-btn"
 								ng-style="ctrl.contractTeam === ctrl.team1Name ? {'background': 'linear-gradient(135deg, ' + ctrl.team1Name + ', ' + ctrl.team1Name + ')', 'border-color': ctrl.team1Name} : {}"
 							>
-								Team {{ctrl.team1Name}}
+								Team {{ctrl.team1Name}}<br /><small class="team-players">({{ctrl.team1Players.join(', ')}})</small>
 							</button>
 							<button
 								ng-click="ctrl.setContractTeam(ctrl.team2Name)"
 								ng-class="{'active': ctrl.contractTeam === ctrl.team2Name}"
 								class="team-btn"
-								ng-style="ctrl.contractTeam === ctrl.team2Name ? {'background': 'linear-gradient(135deg, ' + ctrl.team2Name + ', ' + ctrl.team2Name + ')', 'border-color': ctrl.team2Name} : {}"
+								ng-style="ctrl.contractTeam === ctrl.team2Name ? {'background': 'linear-gradient(135deg, var(--poker-red-dark), var(--poker-red))', 'border-color': 'var(--poker-red)'} : {'border-color': 'var(--poker-red)', 'color': 'var(--poker-red)'}"
 							>
-								Team {{ctrl.team2Name}}
+								Team {{ctrl.team2Name}}<br /><small class="team-players">({{ctrl.team2Players.join(', ')}})</small>
 							</button>
 						</div>
 					</div>
@@ -160,10 +146,10 @@
 							<label>Belote / Rebelote (+20)</label>
 							<div class="special-buttons" style="margin-top: 6px">
 								<button ng-click="ctrl.setBelote(ctrl.team1Name)" ng-class="{'active': ctrl.beloteTeam === ctrl.team1Name}">
-									Team {{ctrl.team1Name}}
+									Belote Team {{ctrl.team1Name}}<br /><small class="team-players">({{ctrl.team1Players.join(', ')}})</small>
 								</button>
 								<button ng-click="ctrl.setBelote(ctrl.team2Name)" ng-class="{'active': ctrl.beloteTeam === ctrl.team2Name}">
-									Team {{ctrl.team2Name}}
+									Belote Team {{ctrl.team2Name}}<br /><small class="team-players">({{ctrl.team2Players.join(', ')}})</small>
 								</button>
 								<button ng-click="ctrl.setBelote(null)" ng-class="{'active': ctrl.beloteTeam === null}">Aucune</button>
 							</div>
@@ -175,10 +161,10 @@
 						<label>Cas Spéciaux</label>
 						<div class="special-buttons">
 							<button ng-click="ctrl.setCapot(ctrl.team1Name)" ng-class="{'active': ctrl.capot === ctrl.team1Name}">
-								Capot Team {{ctrl.team1Name}}
+								Capot Team {{ctrl.team1Name}}<br /><small class="team-players">({{ctrl.team1Players.join(', ')}})</small>
 							</button>
 							<button ng-click="ctrl.setCapot(ctrl.team2Name)" ng-class="{'active': ctrl.capot === ctrl.team2Name}">
-								Capot Team {{ctrl.team2Name}}
+								Capot Team {{ctrl.team2Name}}<br /><small class="team-players">({{ctrl.team2Players.join(', ')}})</small>
 							</button>
 							<button ng-click="ctrl.setCapot(null)" ng-class="{'active': ctrl.capot === null}">Pas de Capot</button>
 						</div>
@@ -278,6 +264,20 @@
 					<div class="table-actions">
 						<button class="secondary_background" ng-click="ctrl.resetGame()">Réinitialiser les Scores</button>
 					</div>
+				</div>
+
+				<!-- Litige Banner -->
+				<div class="litige-banner" ng-if="ctrl.litige > 0">
+					<h3>⚖️ Litige en cours : <strong>{{ctrl.litige}}</strong> points en jeu</h3>
+					<p>Le vainqueur de la prochaine manche remportera ces points.</p>
+				</div>
+
+				<!-- Winner Banner -->
+				<div class="winner-banner" ng-if="ctrl.winnerTeam">
+					<h2>🏆 Team <span ng-style="{ color: ctrl.winnerTeam }">{{ctrl.winnerTeam}}</span> a atteint {{ctrl.pointsLimit}} points !</h2>
+					<button class="declare-winner-btn" ng-click="ctrl.declareWinner(ctrl.winnerTeam)">
+						Déclarer Team {{ctrl.winnerTeam}} vainqueur
+					</button>
 				</div>
 			</div>
 		</div>
@@ -379,7 +379,7 @@
 			}
 
 			.points-input-section {
-				background: var(--surface-dark);
+				background: var(--surface-lighter);
 				border-radius: var(--border-radius-sm);
 				padding: 12px;
 			}
@@ -611,7 +611,7 @@
 			.status-banner {
 				margin: 12px 0;
 				padding: 12px;
-				background: var(--surface-dark);
+				background: var(--surface-lighter);
 				border: 1px solid var(--border-color);
 				border-radius: var(--border-radius-sm);
 				text-align: center;
